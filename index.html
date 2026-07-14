@@ -283,8 +283,7 @@
             document.body.classList.add('dark-mode');
             document.getElementById('themeToggle').textContent = '☀️';
         }
-
-        // ============================================
+                // ============================================
         // CHAT LOGIC (SINGLE LISTENER)
         // ============================================
 
@@ -331,11 +330,13 @@
 
             messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
                 const msg = snapshot.val();
+                msg.key = snapshot.key; // (Fix 1) Added to fix missing keys
                 displayMessage(msg);
-                // Perfect Auto-Scroll (Always scroll down)
-                requestAnimationFrame(() => {
+                
+                // Perfect Auto-Scroll (Always scroll down) - Changed to setTimeout for fix
+                setTimeout(() => {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                });
+                }, 50);
             });
         }
 
@@ -346,7 +347,7 @@
             const div = document.createElement('div');
             const isMine = currentUser && msg.uid === currentUser.uid;
             div.className = 'message-bubble ' + (isMine ? 'sent' : 'received');
-            div.dataset.id = msg.key || Date.now();
+            div.dataset.id = msg.key; // (Fix 2) Removed '|| Date.now()' as key is now properly passed
 
             const filteredText = filterBadWords(msg.text || '');
             const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Just now';
@@ -380,14 +381,24 @@
                 messageInput.value = '';
                 // KEYBOARD STAYS UP: No blur, no focus.
                 // Just ensure scroll hits the bottom
-                requestAnimationFrame(() => {
+                setTimeout(() => {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                });
+                }, 50);
             });
         }
 
+        // (Fix 3) - These two lines strictly prevent keyboard from closing on button tap
+        sendBtn.addEventListener('mousedown', function(e) { e.preventDefault(); });
+        sendBtn.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
+
         sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendMessage(); });
+        
+        messageInput.addEventListener('keydown', e => { 
+            if(e.key === 'Enter') {
+                e.preventDefault(); // Prevents line break
+                sendMessage(); 
+            }
+        });
 
         // Prevent keyboard from closing unexpectedly
         messageInput.addEventListener('blur', function(e) {
