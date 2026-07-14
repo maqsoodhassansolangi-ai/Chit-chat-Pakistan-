@@ -67,13 +67,11 @@
 
         <!-- Chat Section -->
         <div id="chatSection">
-            <nav id="mainMenuBar" style="display:none;">
+            <nav id="mainMenuBar">
                 <div class="menu-tabs">
-                    <!-- Rooms Tab -->
-                    <div class="menu-tab active" data-tab="rooms">
+                    <div class="menu-tab" data-tab="rooms">
                         Rooms <span class="dropdown-arrow">▼</span>
                         <div class="dropdown-menu">
-                            <!-- Admin Only Controls -->
                             <div class="dropdown-item admin-only" data-action="create">
                                 <span class="icon">➕</span>
                                 <div class="item-details">
@@ -95,16 +93,8 @@
                                     <span class="item-desc">Admin only</span>
                                 </div>
                             </div>
-                            <div class="dropdown-item admin-only" data-action="announcement">
-                                <span class="icon">📢</span>
-                                <div class="item-details">
-                                    <span class="item-title">Send Announcement</span>
-                                    <span class="item-desc">Admin only</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    <!-- Chat Tab -->
                     <div class="menu-tab" data-tab="chat">
                         Chat <span class="dropdown-arrow">▼</span>
                         <div class="dropdown-menu">
@@ -115,16 +105,8 @@
                                     <span class="item-desc">Main conversation</span>
                                 </div>
                             </div>
-                            <div class="dropdown-item" data-action="search">
-                                <span class="icon">🔍</span>
-                                <div class="item-details">
-                                    <span class="item-title">Search Messages</span>
-                                    <span class="item-desc">Find old chats</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    <!-- Profile Tab -->
                     <div class="menu-tab" data-tab="profile">
                         Profile <span class="dropdown-arrow">▼</span>
                         <div class="dropdown-menu">
@@ -135,21 +117,17 @@
                                     <span class="item-desc">Account preferences</span>
                                 </div>
                             </div>
-                            <div class="dropdown-item" data-action="logout">
-                                <span class="icon">🚪</span>
-                                <div class="item-details">
-                                    <span class="item-title">Logout</span>
-                                    <span class="item-desc">Sign out</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <!-- Room List Container (الگ ٹیب) -->
-            <div id="roomListContainer" style="display:none;">
-                <div class="room-list-header">
+            <!-- Separator Line -->
+            <div class="menu-separator"></div>
+
+            <!-- Room Panel (All Rooms List) -->
+            <div id="roomPanel">
+                <div class="room-panel-header">
                     <h3>Available Rooms</h3>
                     <div class="room-search-box">
                         <input type="text" id="roomSearchInput" placeholder="Search rooms...">
@@ -162,8 +140,13 @@
             </div>
 
             <div id="chatHeader">
-                <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
+                <div>
+                    <h3 id="currentRoomName"># Public Room</h3>
+                    <span id="onlineCount">🟢 0 online</span>
+                </div>
+                <button id="leaveRoomBtn" style="display:none;">Leave</button>
             </div>
+            
             <div id="chatMessages"></div>
             <div id="chatInputArea">
                 <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
@@ -180,7 +163,7 @@
         </footer>
     </div>
 
-    <!-- 👇 JavaScript 👇 -->
+    <!-- JavaScript -->
     <script src="js/app.js"></script>
 </body>
 </html>
