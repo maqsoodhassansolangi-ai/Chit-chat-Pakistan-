@@ -68,45 +68,12 @@
         <!-- Chat Section -->
         <div id="chatSection">
             <nav id="mainMenuBar" style="display:none;">
-              <!-- Room List & Controls -->
-<div id="roomListContainer" style="display:none;">
-    <div class="room-list-header">
-        <h3>Available Rooms</h3>
-        <div class="room-search-box">
-            <input type="text" id="roomSearchInput" placeholder="Search rooms...">
-            <button id="roomSearchBtn">🔍</button>
-        </div>
-    </div>
-    <ul id="roomList">
-        <!-- Rooms will be loaded here via JavaScript -->
-    </ul>
-</div>
                 <div class="menu-tabs">
+                    <!-- Rooms Tab -->
                     <div class="menu-tab active" data-tab="rooms">
                         Rooms <span class="dropdown-arrow">▼</span>
                         <div class="dropdown-menu">
-                            <div class="dropdown-item" data-action="public">
-                                <span class="icon">🌍</span>
-                                <div class="item-details">
-                                    <span class="item-title">Public Room</span>
-                                    <span class="item-desc">Everyone can join</span>
-                                </div>
-                            </div>
-                            <div class="dropdown-item" data-action="registered">
-                                <span class="icon">🔒</span>
-                                <div class="item-details">
-                                    <span class="item-title">Registered Room</span>
-                                    <span class="item-desc">Sign in required</span>
-                                </div>
-                            </div>
-                            <div class="dropdown-item" data-action="private">
-                                <span class="icon">🔐</span>
-                                <div class="item-details">
-                                    <span class="item-title">Private Room</span>
-                                    <span class="item-desc">Invite only</span>
-                                </div>
-                            </div>
-                            <hr class="dropdown-divider">
+                            <!-- Admin Only Controls -->
                             <div class="dropdown-item admin-only" data-action="create">
                                 <span class="icon">➕</span>
                                 <div class="item-details">
@@ -114,8 +81,30 @@
                                     <span class="item-desc">Admin only</span>
                                 </div>
                             </div>
+                            <div class="dropdown-item admin-only" data-action="delete">
+                                <span class="icon">🗑️</span>
+                                <div class="item-details">
+                                    <span class="item-title">Delete Room</span>
+                                    <span class="item-desc">Admin only</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-item admin-only" data-action="rename">
+                                <span class="icon">✏️</span>
+                                <div class="item-details">
+                                    <span class="item-title">Rename Room</span>
+                                    <span class="item-desc">Admin only</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-item admin-only" data-action="announcement">
+                                <span class="icon">📢</span>
+                                <div class="item-details">
+                                    <span class="item-title">Send Announcement</span>
+                                    <span class="item-desc">Admin only</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <!-- Chat Tab -->
                     <div class="menu-tab" data-tab="chat">
                         Chat <span class="dropdown-arrow">▼</span>
                         <div class="dropdown-menu">
@@ -135,6 +124,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Profile Tab -->
                     <div class="menu-tab" data-tab="profile">
                         Profile <span class="dropdown-arrow">▼</span>
                         <div class="dropdown-menu">
@@ -156,6 +146,21 @@
                     </div>
                 </div>
             </nav>
+
+            <!-- Room List Container (الگ ٹیب) -->
+            <div id="roomListContainer" style="display:none;">
+                <div class="room-list-header">
+                    <h3>Available Rooms</h3>
+                    <div class="room-search-box">
+                        <input type="text" id="roomSearchInput" placeholder="Search rooms...">
+                        <button id="roomSearchBtn">🔍</button>
+                    </div>
+                </div>
+                <ul id="roomList">
+                    <!-- Rooms will be loaded here -->
+                </ul>
+            </div>
+
             <div id="chatHeader">
                 <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
             </div>
@@ -166,6 +171,7 @@
             </div>
         </div>
 
+        <!-- Footer -->
         <footer id="authFooter">
             <div class="footer-links">
                 <a href="#">Terms</a> <a href="#">Privacy</a> <a href="#">Rules</a>
@@ -174,7 +180,7 @@
         </footer>
     </div>
 
-    <!-- 👇 صرف یہ ایک لائن باقی ہے 👇 -->
+    <!-- 👇 JavaScript 👇 -->
     <script src="js/app.js"></script>
 </body>
 </html>
