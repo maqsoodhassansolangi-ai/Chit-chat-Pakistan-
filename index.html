@@ -93,12 +93,10 @@
     </style>
 </head>
 <body>
-
     <div id="loadingScreen">
         <div class="spinner"></div>
         <p>ChitChat Pakistan</p>
     </div>
-
     <div id="appContainer" style="display:none;">
         <header id="mainHeader">
             <div class="header-left"><span class="logo-text">💬 ChitChat</span></div>
@@ -107,8 +105,7 @@
                 <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
             </div>
         </header>
-
-        <div id="authSection">
+                <div id="authSection">
             <div class="auth-card">
                 <h2>ChitChat Pakistan</h2>
                 <p class="subtitle">وہاں جہاں دوستی اور باتیں پروان چڑھتی ہیں</p>
@@ -139,6 +136,7 @@
                 <button id="guestLoginBtn" class="auth-btn guest">Continue as Guest</button>
             </div>
         </div>
+
         <div id="chatSection">
             <div id="chatHeader">
                 <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
@@ -173,9 +171,6 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // ===== ADMIN EMAIL =====
-        const ADMIN_EMAIL = "maqsoodhassansolangi90@gmail.com";
-
         // ===== DOM =====
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
@@ -190,7 +185,6 @@
         const sendBtn = document.getElementById('sendMessageBtn');
         const onlineCount = document.getElementById('onlineCount');
 
-        // ===== TOGGLE PASSWORD =====
         document.querySelectorAll('.toggle-password').forEach(el => {
             el.addEventListener('click', function() {
                 const inp = document.getElementById(this.dataset.target);
@@ -199,7 +193,6 @@
             });
         });
 
-        // ===== TABS =====
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -209,7 +202,6 @@
             });
         });
 
-        // ===== SIGN UP =====
         signupForm.addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('signupEmail').value.trim();
@@ -222,7 +214,6 @@
             }).catch(err => alert(err.message));
         });
 
-        // ===== LOGIN =====
         loginForm.addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
@@ -232,26 +223,22 @@
                 .catch(err => alert(err.message));
         });
 
-        // ===== GOOGLE =====
         googleBtn.addEventListener('click', () => {
             auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
                 .then(() => showChat())
                 .catch(err => alert(err.message));
         });
 
-        // ===== GUEST =====
         guestBtn.addEventListener('click', () => {
             auth.signInAnonymously()
                 .then(() => showChat())
                 .catch(err => alert(err.message));
         });
 
-        // ===== LOGOUT =====
         logoutBtn.addEventListener('click', () => {
             auth.signOut().then(() => showAuth());
         });
 
-        // ===== UI HELPERS =====
         function showChat() {
             authSection.style.display = 'none';
             chatSection.style.display = 'flex';
@@ -265,7 +252,6 @@
             chatMessages.innerHTML = '';
         }
 
-        // ===== AUTH STATE =====
         let currentUser = null;
         let statusRef = database.ref('status');
 
@@ -283,7 +269,6 @@
             }
         });
 
-        // ===== THEME TOGGLE =====
         document.getElementById('themeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
             this.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
@@ -294,14 +279,11 @@
             document.getElementById('themeToggle').textContent = '☀️';
         }
 
-        // ============================================
-        // FINAL FIXED CHAT JS
-        // ============================================
-
+        // ===== REAL-TIME LISTENER SETUP =====
         let messagesRef = database.ref('messages');
         let isListenerAttached = false;
 
-        // **FIX 1: PRESENCE**
+        // **آن لائن کاؤنٹ (لائیو)**
         function initPresence(user) {
             const userStatusRef = statusRef.child(user.uid);
             database.ref('.info/connected').on('value', function(snapshot) {
@@ -312,12 +294,11 @@
             });
 
             statusRef.orderByChild('state').equalTo('online').on('value', snap => {
-                const count = snap.numChildren();
-                onlineCount.textContent = `🟢 ${count} online`;
+                onlineCount.textContent = `🟢 ${snap.numChildren()} online`;
             });
         }
 
-        // **FIX 2 & 3: LISTENER صرف ایک بار لگے + فوراً سکرول**
+        // **میسجز (فوراً اور لائیو)**
         function loadMessages() {
             chatMessages.innerHTML = '';
             if (isListenerAttached) return;
@@ -326,10 +307,8 @@
             messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
                 const msg = snapshot.val();
                 displayMessage(msg);
-
-                requestAnimationFrame(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                });
+                // ہر نئے میسج پر فوراً نیچے سکرول
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
 
@@ -358,7 +337,7 @@
             return text;
         }
 
-        // **FIX: کی بورڈ کو ساکن رکھیں**
+        // **میسج بھیجیں (کی بورڈ کو ساکن رکھیں)**
         function sendMessage() {
             if(!currentUser) return alert('Please login first!');
             const text = messageInput.value.trim();
@@ -371,6 +350,7 @@
                 timestamp: Date.now()
             }).then(() => {
                 messageInput.value = '';
+                // یہاں کوئی focus نہیں، کی بورڈ ساکن رہے گا
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
@@ -378,13 +358,7 @@
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendMessage(); });
 
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
-        }
-
-        console.log("✅ All systems fixed! No more duplicates.");
+        console.log("✅ Live Chat & Real-time Count Active!");
     </script>
 </body>
 </html>
