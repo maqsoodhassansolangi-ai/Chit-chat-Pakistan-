@@ -116,38 +116,7 @@
                 <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
             </div>
         </header>
-        <!-- ===== MENU BAR (Phase 2) ===== -->
-<nav id="mainMenuBar">
-    <div class="menu-tabs">
-        <div class="menu-tab active" data-tab="rooms">
-            Rooms <span class="dropdown-arrow">▼</span>
-            <div class="dropdown-menu">
-                <div class="dropdown-item" data-action="public">Public Room</div>
-                <div class="dropdown-item" data-action="registered">Registered Room</div>
-                <div class="dropdown-item" data-action="private">Private Room</div>
-                <hr class="dropdown-divider">
-                <div class="dropdown-item admin-only" data-action="create">+ Create New Room</div>
-                <div class="dropdown-item admin-only" data-action="delete">🗑 Delete Room</div>
-                <div class="dropdown-item admin-only" data-action="rename">✏️ Rename Room</div>
-                <div class="dropdown-item admin-only" data-action="announcement">📢 Send Announcement</div>
-            </div>
-        </div>
-        <div class="menu-tab" data-tab="chat">
-            Chat <span class="dropdown-arrow">▼</span>
-            <div class="dropdown-menu">
-                <div class="dropdown-item" data-action="public-chat"># Public Chat</div>
-                <div class="dropdown-item" data-action="search">🔍 Search Messages</div>
-            </div>
-        </div>
-        <div class="menu-tab" data-tab="profile">
-            Profile <span class="dropdown-arrow">▼</span>
-            <div class="dropdown-menu">
-                <div class="dropdown-item" data-action="settings">⚙️ Settings</div>
-                <div class="dropdown-item" data-action="logout">🚪 Logout</div>
-            </div>
-        </div>
-    </div>
-</nav>
+
                 <!-- Auth Section -->
         <div id="authSection">
             <div class="auth-card">
@@ -183,6 +152,38 @@
 
         <!-- Chat Section -->
         <div id="chatSection">
+            <!-- ===== MENU BAR (Phase 2) ===== -->
+<nav id="mainMenuBar">
+    <div class="menu-tabs">
+        <div class="menu-tab active" data-tab="rooms">
+            Rooms <span class="dropdown-arrow">▼</span>
+            <div class="dropdown-menu">
+                <div class="dropdown-item" data-action="public">Public Room</div>
+                <div class="dropdown-item" data-action="registered">Registered Room</div>
+                <div class="dropdown-item" data-action="private">Private Room</div>
+                <hr class="dropdown-divider">
+                <div class="dropdown-item admin-only" data-action="create">+ Create New Room</div>
+                <div class="dropdown-item admin-only" data-action="delete">🗑 Delete Room</div>
+                <div class="dropdown-item admin-only" data-action="rename">✏️ Rename Room</div>
+                <div class="dropdown-item admin-only" data-action="announcement">📢 Send Announcement</div>
+            </div>
+        </div>
+        <div class="menu-tab" data-tab="chat">
+            Chat <span class="dropdown-arrow">▼</span>
+            <div class="dropdown-menu">
+                <div class="dropdown-item" data-action="public-chat"># Public Chat</div>
+                <div class="dropdown-item" data-action="search">🔍 Search Messages</div>
+            </div>
+        </div>
+        <div class="menu-tab" data-tab="profile">
+            Profile <span class="dropdown-arrow">▼</span>
+            <div class="dropdown-menu">
+                <div class="dropdown-item" data-action="settings">⚙️ Settings</div>
+                <div class="dropdown-item" data-action="logout">🚪 Logout</div>
+            </div>
+        </div>
+    </div>
+</nav>
             <div id="chatHeader">
                 <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
             </div>
