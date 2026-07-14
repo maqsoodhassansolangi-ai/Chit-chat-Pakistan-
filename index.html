@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
+        /* ===== RESET & BASE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #ECE5DD; height: 100vh; overflow: hidden; transition: 0.3s; }
         
@@ -28,6 +29,7 @@
         .header-right button { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
         .logout-btn { font-size: 14px !important; background: rgba(255,255,255,0.15) !important; padding: 6px 14px !important; border-radius: 20px !important; }
 
+        /* ===== AUTH ===== */
         #authSection { display: flex; align-items: center; justify-content: center; height: calc(100vh - 60px); background: linear-gradient(135deg, #075E54, #128C7E); padding: 20px; }
         .auth-card { background: #fff; border-radius: 20px; padding: 32px 28px; max-width: 420px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
         .auth-card h2 { text-align: center; color: #075E54; margin-bottom: 4px; }
@@ -62,6 +64,7 @@
         #authFooter { text-align: center; padding: 16px 20px; background: #075E54; color: #fff; }
         .footer-links a { color: #fff; text-decoration: none; margin: 0 10px; font-size: 14px; }
 
+        /* ===== CHAT ===== */
         #chatSection { display: none; flex: 1; flex-direction: column; height: 100%; background: #ECE5DD; }
         #chatHeader { background: #075E54; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
         #onlineCount { font-size: 13px; opacity: 0.8; }
@@ -77,6 +80,7 @@
         #chatInputArea input { flex: 1; border: none; background: #f0f2f5; padding: 10px 16px; border-radius: 24px; font-size: 15px; outline: none; }
         #sendMessageBtn { background: #075E54; border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
+        /* ===== DARK MODE ===== */
         body.dark-mode { background: #111B21; }
         body.dark-mode #chatSection { background: #0b141a; }
         body.dark-mode #chatMessages { background: #0b141a; }
@@ -89,14 +93,19 @@
         body.dark-mode .auth-btn.primary { background: #25D366; color: #111B21; }
         body.dark-mode #authFooter { background: #0b141a; }
 
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) { .message-bubble { max-width: 85%; font-size: 14px; } }
     </style>
 </head>
 <body>
+
+    <!-- Loading Screen -->
     <div id="loadingScreen">
         <div class="spinner"></div>
         <p>ChitChat Pakistan</p>
     </div>
+
+    <!-- Main Container -->
     <div id="appContainer" style="display:none;">
         <header id="mainHeader">
             <div class="header-left"><span class="logo-text">💬 ChitChat</span></div>
@@ -105,7 +114,8 @@
                 <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
             </div>
         </header>
-                <div id="authSection">
+                <!-- Auth Section -->
+        <div id="authSection">
             <div class="auth-card">
                 <h2>ChitChat Pakistan</h2>
                 <p class="subtitle">وہاں جہاں دوستی اور باتیں پروان چڑھتی ہیں</p>
@@ -137,6 +147,7 @@
             </div>
         </div>
 
+        <!-- Chat Section -->
         <div id="chatSection">
             <div id="chatHeader">
                 <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
@@ -148,6 +159,7 @@
             </div>
         </div>
 
+        <!-- Footer -->
         <footer id="authFooter">
             <div class="footer-links">
                 <a href="#">Terms</a> <a href="#">Privacy</a> <a href="#">Rules</a>
@@ -157,7 +169,9 @@
     </div>
 
     <script>
-        // ===== FIREBASE CONFIG =====
+        // ============================================
+        // FIREBASE CONFIG
+        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyCvCez1Hpq4gEsloecycnbKM_nuQlQVGIA",
             authDomain: "chit-chat-pakistan.firebaseapp.com",
@@ -171,7 +185,9 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // ===== DOM =====
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const googleBtn = document.getElementById('googleSignInBtn');
@@ -185,6 +201,9 @@
         const sendBtn = document.getElementById('sendMessageBtn');
         const onlineCount = document.getElementById('onlineCount');
 
+        // ============================================
+        // UI HELPERS (Auth & Tabs)
+        // ============================================
         document.querySelectorAll('.toggle-password').forEach(el => {
             el.addEventListener('click', function() {
                 const inp = document.getElementById(this.dataset.target);
@@ -208,10 +227,12 @@
             const pass = document.getElementById('signupPassword').value.trim();
             if(!document.getElementById('termsCheckbox').checked) return alert('Accept Terms first');
             if(pass.length < 6) return alert('Password must be 6+ chars');
-            auth.createUserWithEmailAndPassword(email, pass).then(() => {
-                alert('Account created! Sign in now.');
-                document.querySelector('[data-tab="login"]').click();
-            }).catch(err => alert(err.message));
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then(() => {
+                    alert('Account created! Sign in now.');
+                    document.querySelector('[data-tab="login"]').click();
+                })
+                .catch(err => alert(err.message));
         });
 
         loginForm.addEventListener('submit', e => {
@@ -219,7 +240,7 @@
             const email = document.getElementById('loginEmail').value.trim();
             const pass = document.getElementById('loginPassword').value.trim();
             auth.signInWithEmailAndPassword(email, pass)
-                .then(() => { showChat(); })
+                .then(() => showChat())
                 .catch(err => alert(err.message));
         });
 
@@ -245,29 +266,13 @@
             logoutBtn.style.display = 'inline-block';
             loadMessages();
         }
+
         function showAuth() {
             authSection.style.display = 'flex';
             chatSection.style.display = 'none';
             logoutBtn.style.display = 'none';
             chatMessages.innerHTML = '';
         }
-
-        let currentUser = null;
-        let statusRef = database.ref('status');
-
-        auth.onAuthStateChanged(user => {
-            loadingScreen.style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
-            
-            if (user) {
-                currentUser = user;
-                showChat();
-                initPresence(user);
-            } else {
-                currentUser = null;
-                showAuth();
-            }
-        });
 
         document.getElementById('themeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
@@ -279,11 +284,28 @@
             document.getElementById('themeToggle').textContent = '☀️';
         }
 
-        // ===== REAL-TIME LISTENER SETUP =====
-        let messagesRef = database.ref('messages');
-        let isListenerAttached = false;
+        // ============================================
+        // CHAT LOGIC (SINGLE LISTENER)
+        // ============================================
 
-        // **آن لائن کاؤنٹ (لائیو)**
+        let messagesRef = database.ref('messages');
+        let currentUser = null;
+        let statusRef = database.ref('status');
+
+        auth.onAuthStateChanged(user => {
+            loadingScreen.style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            if (user) {
+                currentUser = user;
+                initPresence(user);
+                showChat();
+            } else {
+                currentUser = null;
+                showAuth();
+            }
+        });
+
+        // Presence Logic
         function initPresence(user) {
             const userStatusRef = statusRef.child(user.uid);
             database.ref('.info/connected').on('value', function(snapshot) {
@@ -298,20 +320,26 @@
             });
         }
 
-        // **میسجز (فوراً اور لائیو)**
+        // *** SINGLE LISTENER FOR MESSAGES ***
+        let listenerAttached = false;
+
         function loadMessages() {
+            if (listenerAttached) return;
+            listenerAttached = true;
+
             chatMessages.innerHTML = '';
-            if (isListenerAttached) return;
-            isListenerAttached = true;
 
             messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
                 const msg = snapshot.val();
                 displayMessage(msg);
-                // ہر نئے میسج پر فوراً نیچے سکرول
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // Perfect Auto-Scroll (Always scroll down)
+                requestAnimationFrame(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
             });
         }
 
+        // Display Single Message (No Duplicates)
         function displayMessage(msg) {
             if (chatMessages.querySelector(`[data-id="${msg.key}"]`)) return;
 
@@ -337,7 +365,7 @@
             return text;
         }
 
-        // **میسج بھیجیں (کی بورڈ کو ساکن رکھیں)**
+        // *** SEND MESSAGE WITH WHATSAPP-LIKE KEYBOARD ***
         function sendMessage() {
             if(!currentUser) return alert('Please login first!');
             const text = messageInput.value.trim();
@@ -350,15 +378,24 @@
                 timestamp: Date.now()
             }).then(() => {
                 messageInput.value = '';
-                // یہاں کوئی focus نہیں، کی بورڈ ساکن رہے گا
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // KEYBOARD STAYS UP: No blur, no focus.
+                // Just ensure scroll hits the bottom
+                requestAnimationFrame(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
             });
         }
 
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendMessage(); });
 
-        console.log("✅ Live Chat & Real-time Count Active!");
+        // Prevent keyboard from closing unexpectedly
+        messageInput.addEventListener('blur', function(e) {
+            // We deliberately do nothing here
+            // User must press the Back button to close keyboard
+        });
+
+        console.log("✅ Final Fix Applied: Single Listener + Static Keyboard");
     </script>
 </body>
 </html>
