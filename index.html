@@ -272,6 +272,13 @@
             chatSection.style.display = 'none';
             logoutBtn.style.display = 'none';
             chatMessages.innerHTML = '';
+            
+            // 🛠️ CRITICAL BUG FIX (Logout clean-up)
+            // Detach firebase listener and reset safety flag so it loads perfectly next time
+            if (typeof messagesRef !== 'undefined') {
+                messagesRef.off();
+            }
+            listenerAttached = false;
         }
 
         document.getElementById('themeToggle').addEventListener('click', function() {
@@ -330,10 +337,12 @@
 
             messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
                 const msg = snapshot.val();
-                msg.key = snapshot.key; // (Fix 1) Added to fix missing keys
-                displayMessage(msg);
+                if (msg) {
+                    msg.key = snapshot.key; // (Fix 1) Safely attach the Firebase key
+                    displayMessage(msg);
+                }
                 
-                // Perfect Auto-Scroll (Always scroll down) - Changed to setTimeout for fix
+                // Perfect Auto-Scroll (Always scroll down)
                 setTimeout(() => {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }, 50);
@@ -342,12 +351,13 @@
 
         // Display Single Message (No Duplicates)
         function displayMessage(msg) {
+            if (!msg || !msg.key) return;
             if (chatMessages.querySelector(`[data-id="${msg.key}"]`)) return;
 
             const div = document.createElement('div');
             const isMine = currentUser && msg.uid === currentUser.uid;
             div.className = 'message-bubble ' + (isMine ? 'sent' : 'received');
-            div.dataset.id = msg.key; // (Fix 2) Removed '|| Date.now()' as key is now properly passed
+            div.dataset.id = msg.key; // Real Firebase Key
 
             const filteredText = filterBadWords(msg.text || '');
             const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Just now';
@@ -384,10 +394,12 @@
                 setTimeout(() => {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }, 50);
+            }).catch(err => {
+                console.error("Error sending message: ", err);
             });
         }
 
-        // (Fix 3) - These two lines strictly prevent keyboard from closing on button tap
+        // Strictly prevent keyboard from closing on button tap
         sendBtn.addEventListener('mousedown', function(e) { e.preventDefault(); });
         sendBtn.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
 
