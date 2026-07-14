@@ -1,5 +1,5 @@
 // ============================================
-// ChitChat Pakistan - app.js (Phase 2 - Fixed)
+// ChitChat Pakistan - app.js (Phase 2 - Complete)
 // ============================================
 
 // ===== FIREBASE CONFIG =====
@@ -32,10 +32,12 @@ const onlineCount = document.getElementById('onlineCount');
 const mainMenuBar = document.getElementById('mainMenuBar');
 const menuTabs = document.querySelectorAll('.menu-tab');
 const dropdownItems = document.querySelectorAll('.dropdown-item');
-const roomListContainer = document.getElementById('roomListContainer');
+const roomPanel = document.getElementById('roomPanel');
 const roomList = document.getElementById('roomList');
 const roomSearchInput = document.getElementById('roomSearchInput');
 const roomSearchBtn = document.getElementById('roomSearchBtn');
+const currentRoomName = document.getElementById('currentRoomName');
+const leaveRoomBtn = document.getElementById('leaveRoomBtn');
 
 // ===== GLOBAL VARIABLES =====
 let messagesRef = database.ref('messages');
@@ -44,6 +46,7 @@ let currentUser = null;
 let listenerAttached = false;
 const ADMIN_EMAIL = "maqsoodhassansolangi90@gmail.com";
 let isAdmin = false;
+let currentRoomId = 'room1';
 
 // ============================================
 // AUTH & TABS SYSTEM (فیز 1 سے لاکڈ)
@@ -110,6 +113,7 @@ function showChat() {
     logoutBtn.style.display = 'inline-block';
     document.getElementById('authFooter').style.display = 'none';
     mainMenuBar.style.display = 'flex';
+    roomPanel.style.display = 'block';
     loadMessages();
     setTimeout(adjustViewport, 100);
 }
@@ -121,6 +125,7 @@ function showAuth() {
     chatMessages.innerHTML = '';
     document.getElementById('authFooter').style.display = 'block';
     mainMenuBar.style.display = 'none';
+    roomPanel.style.display = 'none';
     
     if (messagesRef) {
         messagesRef.off();
@@ -176,7 +181,6 @@ function initPresence(user) {
         onlineCount.textContent = `🟢 ${snap.numChildren()} online`;
     });
 }
-
 // ============================================
 // MESSAGE LOADING & DISPLAY (فیز 1 سے لاکڈ)
 // ============================================
@@ -291,11 +295,118 @@ messageInput.addEventListener('keydown', e => {
         sendMessage(); 
     }
 });
+
 // ============================================
-// FIXED MENU BAR LOGIC
+// ROOM LOGIC (فیز 2 - مکمل کنٹرول)
 // ============================================
 
-// ===== DROPDOWN ITEMS CLICK HANDLER =====
+const demoRooms = [
+    { id: 'room1', name: 'General Chat', type: 'public' },
+    { id: 'room2', name: 'Tech Talk', type: 'registered' },
+    { id: 'room3', name: 'Admin Only', type: 'private' }
+];
+
+// روم پینل میں لسٹ دکھائیں
+function renderRoomList(rooms) {
+    roomList.innerHTML = '';
+    rooms.forEach(room => {
+        const li = document.createElement('li');
+        li.dataset.roomId = room.id;
+        li.innerHTML = `
+            <span>${room.name} (${room.type})</span>
+            <button class="btn-join" onclick="joinRoom('${room.id}')">Join</button>
+        `;
+        roomList.appendChild(li);
+    });
+}
+
+// ڈیفالٹ رومز لوڈ کریں
+renderRoomList(demoRooms);
+
+// روم جوائن کریں
+function joinRoom(roomId) {
+    const room = demoRooms.find(r => r.id === roomId);
+    if (!room) return alert('Room not found!');
+    
+    currentRoomId = roomId;
+    // ہیڈر کا نام اپ ڈیٹ کریں (سنک)
+    currentRoomName.textContent = `# ${room.name}`;
+    // Leave بٹن دکھائیں
+    leaveRoomBtn.style.display = 'inline-block';
+    
+    // (Dem موڈ) کامیابی کا پیغام
+    alert(`You have joined: ${room.name}`);
+    
+    // چیٹ میسیجز کو صاف کریں اور نئے روم کا ویلکم میسیج دکھائیں
+    chatMessages.innerHTML = '';
+    const welcomeMsg = document.createElement('div');
+    welcomeMsg.className = 'message-bubble received';
+    welcomeMsg.innerHTML = `
+        <span class="sender-name">Admin</span>
+        <span>Welcome to ${room.name}!</span>
+        <span class="message-time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+    `;
+    chatMessages.appendChild(welcomeMsg);
+    setTimeout(scrollToBottom, 100);
+}
+
+// روم چھوڑیں
+function leaveRoom() {
+    if (confirm('Are you sure you want to leave this room?')) {
+        currentRoomId = 'room1';
+        currentRoomName.textContent = '# Public Room';
+        leaveRoomBtn.style.display = 'none';
+        alert('You have left the room.');
+        
+        // واپس پبلک روم میں جائیں
+        chatMessages.innerHTML = '';
+        joinRoom('room1');
+    }
+}
+leaveRoomBtn.addEventListener('click', leaveRoom);
+
+// روم تلاش کریں
+function searchRooms() {
+    const query = roomSearchInput.value.trim().toLowerCase();
+    if (!query) {
+        renderRoomList(demoRooms);
+        return;
+    }
+    const filtered = demoRooms.filter(room => 
+        room.name.toLowerCase().includes(query)
+    );
+    renderRoomList(filtered);
+}
+roomSearchBtn.addEventListener('click', searchRooms);
+roomSearchInput.addEventListener('keyup', e => {
+    if (e.key === 'Enter') searchRooms();
+});
+
+// ============================================
+// MENU BAR LOGIC (کنٹرولز صرف ایڈمن کے لیے)
+// ============================================
+
+// مینیو ٹیبز پر کلک کرنے کا ایونٹ
+menuTabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        // اگر "Rooms" ٹیب ہے تو کچھ خاص نہیں (ڈراپ ڈاؤن ہوور سے کھلے گا)
+        if (this.dataset.tab === 'rooms') {
+            // بس یقینی بنائیں کہ ڈراپ ڈاؤن کلک سے بند نہ ہو
+            return;
+        }
+        
+        // باقی ٹیبز کے لیے ڈراپ ڈاؤن کھولیں
+        const dropdown = this.querySelector('.dropdown-menu');
+        if (dropdown) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu !== dropdown) menu.style.display = 'none';
+            });
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    });
+});
+
+// ڈراپ ڈاؤن آئٹمز پر کلک کرنے کا ایونٹ
 dropdownItems.forEach(item => {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -312,20 +423,12 @@ dropdownItems.forEach(item => {
             case 'rename':
                 renameRoom();
                 break;
-            case 'announcement':
-                sendAnnouncement();
-                break;
             case 'public-chat':
-                switchRoom('public');
-                break;
-            case 'search':
-                searchMessages();
+                // پبلک چیٹ پر سوئچ کریں
+                joinRoom('room1');
                 break;
             case 'settings':
                 openSettings();
-                break;
-            case 'logout':
-                logoutBtn.click();
                 break;
             default:
                 alert('This feature is coming soon!');
@@ -333,94 +436,7 @@ dropdownItems.forEach(item => {
     });
 });
 
-// ============================================
-// FIX: ROOM LIST TOGGLE (صرف روم لسٹ کھولے، ڈراپ ڈاؤن نہیں)
-// ============================================
-
-const demoRooms = [
-    { id: 'room1', name: 'General Chat', type: 'public', members: 5 },
-    { id: 'room2', name: 'Tech Talk', type: 'registered', members: 3 },
-    { id: 'room3', name: 'Admin Only', type: 'private', members: 1 }
-];
-
-function toggleRoomList() {
-    // پہلے مینیو کا ڈراپ ڈاؤن بند کریں (تا کہ اوورلیپ نہ ہو)
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.style.display = 'none';
-    });
-
-    if (roomListContainer.style.display === 'none') {
-        roomListContainer.style.display = 'block';
-        renderRoomList(demoRooms);
-    } else {
-        roomListContainer.style.display = 'none';
-    }
-}
-
-function renderRoomList(rooms) {
-    roomList.innerHTML = '';
-    rooms.forEach(room => {
-        const li = document.createElement('li');
-        li.dataset.roomId = room.id;
-        li.innerHTML = `
-            <span>${room.name} (${room.type})</span>
-            <button class="btn-join" onclick="joinRoom('${room.id}')">Join</button>
-        `;
-        roomList.appendChild(li);
-    });
-}
-
-function joinRoom(roomId) {
-    const room = demoRooms.find(r => r.id === roomId);
-    if (!room) return alert('Room not found!');
-    alert(`You have joined: ${room.name}`);
-    roomListContainer.style.display = 'none';
-}
-
-function searchRooms() {
-    const query = roomSearchInput.value.trim().toLowerCase();
-    if (!query) {
-        renderRoomList(demoRooms);
-        return;
-    }
-    const filtered = demoRooms.filter(room => 
-        room.name.toLowerCase().includes(query)
-    );
-    renderRoomList(filtered);
-}
-
-roomSearchBtn.addEventListener('click', searchRooms);
-roomSearchInput.addEventListener('keyup', e => {
-    if (e.key === 'Enter') searchRooms();
-});
-
-// ============================================
-// FIX: MENU TABS CLICK HANDLER (صرف مینیو ٹیبز کو کام کریں)
-// ============================================
-menuTabs.forEach(tab => {
-    tab.addEventListener('click', function(e) {
-        // اگر "Rooms" ٹیب ہے تو روم لسٹ کھولیں
-        if (this.dataset.tab === 'rooms') {
-            toggleRoomList();
-            return;
-        }
-        
-        // باقی ٹیبز کے لیے ڈراپ ڈاؤن کھولیں
-        const dropdown = this.querySelector('.dropdown-menu');
-        if (dropdown) {
-            // پہلے سب بند کریں
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                if (menu !== dropdown) menu.style.display = 'none';
-            });
-            // موجودہ کو ٹوگل کریں
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-    });
-});
-
-// ============================================
-// ADMIN FUNCTIONS
-// ============================================
+// ===== ADMIN FUNCTIONS =====
 function createNewRoom() {
     if (!isAdmin) {
         alert('Only Admin can create new rooms!');
@@ -428,7 +444,10 @@ function createNewRoom() {
     }
     const roomName = prompt('Enter room name:');
     if (roomName) {
-        alert(`Room "${roomName}" created successfully! (Demo)`);
+        const newRoom = { id: 'room' + (demoRooms.length + 1), name: roomName, type: 'private' };
+        demoRooms.push(newRoom);
+        renderRoomList(demoRooms);
+        alert(`Room "${roomName}" created successfully!`);
     }
 }
 
@@ -437,8 +456,17 @@ function deleteRoom() {
         alert('Only Admin can delete rooms!');
         return;
     }
-    if (confirm('Are you sure you want to delete this room?')) {
-        alert('Room deleted! (Demo)');
+    if (confirm('Are you sure you want to delete the current room?')) {
+        const index = demoRooms.findIndex(r => r.id === currentRoomId);
+        if (index !== -1) {
+            demoRooms.splice(index, 1);
+            renderRoomList(demoRooms);
+            // واپس پبلک روم پر جائیں
+            joinRoom('room1');
+            alert('Room deleted successfully!');
+        } else {
+            alert('Room not found!');
+        }
     }
 }
 
@@ -449,53 +477,14 @@ function renameRoom() {
     }
     const newName = prompt('Enter new room name:');
     if (newName) {
-        alert(`Room renamed to "${newName}"! (Demo)`);
-    }
-}
-
-function sendAnnouncement() {
-    if (!isAdmin) {
-        alert('Only Admin can send announcements!');
-        return;
-    }
-    const msg = prompt('Enter announcement message:');
-    if (msg) {
-        alert(`Announcement sent: "${msg}" (Demo)`);
-    }
-}
-
-function switchRoom(type) {
-    const header = document.querySelector('#chatHeader h3');
-    if (header) {
-        const roomNames = {
-            public: '# Public Room',
-            registered: '# Registered Room',
-            private: '# Private Room'
-        };
-        header.textContent = roomNames[type] || '# Public Room';
-    }
-    chatMessages.innerHTML = '';
-    // Demo messages
-    const demoMsgs = [
-        { name: 'Admin', text: `Welcome to ${type} room!`, time: new Date().toLocaleTimeString() }
-    ];
-    demoMsgs.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'message-bubble received';
-        div.innerHTML = `
-            <span class="sender-name">${msg.name}</span>
-            <span>${msg.text}</span>
-            <span class="message-time">${msg.time}</span>
-        `;
-        chatMessages.appendChild(div);
-    });
-    setTimeout(scrollToBottom, 100);
-}
-
-function searchMessages() {
-    const query = prompt('Enter search term:');
-    if (query) {
-        alert(`Searching for "${query}"... (Demo)`);
+        const room = demoRooms.find(r => r.id === currentRoomId);
+        if (room) {
+            room.name = newName;
+            renderRoomList(demoRooms);
+            // ہیڈر کا نام بھی اپ ڈیٹ کریں
+            currentRoomName.textContent = `# ${newName}`;
+            alert(`Room renamed to "${newName}"!`);
+        }
     }
 }
 
@@ -503,15 +492,5 @@ function openSettings() {
     alert('Settings panel will open here in Phase 5!');
 }
 
-// ===== KEYBOARD SHORTCUTS =====
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.style.display = 'none';
-        });
-        roomListContainer.style.display = 'none';
-    }
-});
-
 console.log("✅ App.js loaded successfully!");
-console.log("🔥 All Menu Tabs and Dropdowns Fixed!");
+console.log("🔥 Phase 2 Complete! All room controls synced!");
