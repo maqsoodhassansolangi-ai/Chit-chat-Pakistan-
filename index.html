@@ -533,5 +533,23 @@
 
 </script>
     <script src="js/app.js"></script>
+<!-- ===== ERROR CATCHER (موبائل کے لیے) ===== -->
+<script>
+    // سکرین کے اوپر ایرر دکھانے کا فنکشن
+    window.onerror = function(message, source, lineno, colno, error) {
+        const errorBox = document.createElement('div');
+        errorBox.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 999999;
+            background: #d32f2f; color: white; padding: 20px 15px;
+            font-size: 14px; text-align: center; font-weight: bold;
+            border-bottom: 3px solid #b71c1c; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            word-break: break-word;
+        `;
+        errorBox.textContent = "🚨 ERROR: " + message;
+        document.body.prepend(errorBox);
+        return true;
+    };
+    console.log("✅ Error Catcher Active!");
+</script>
 </body>
 </html>
