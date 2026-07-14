@@ -16,7 +16,6 @@
         /* ===== RESET & BASE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* dynamic viewport height (dvh) کا استعمال تاکہ اسکرین کبھی نیچے نہ دبے */
         body { font-family: 'Inter', sans-serif; background: #ECE5DD; height: 100dvh; height: 100vh; overflow: hidden; transition: 0.3s; }
         
         #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #075E54; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
@@ -66,20 +65,18 @@
         #authFooter { text-align: center; padding: 16px 20px; background: #075E54; color: #fff; flex-shrink: 0; }
         .footer-links a { color: #fff; text-decoration: none; margin: 0 10px; font-size: 14px; }
 
-        /* ===== CHAT ===== */
+        /* ===== CHAT SECTION ===== */
         #chatSection { display: none; flex: 1; flex-direction: column; background: #ECE5DD; overflow: hidden; }
         #chatHeader { background: #075E54; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         #onlineCount { font-size: 13px; opacity: 0.8; }
         
-        /* میسجز ایریا: اب یہ ان پٹ باکس سے اوپر ہی رہے گا اور کبھی اوورلیپ نہیں کرے گا */
-        #chatMessages { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 16px !important; }
+        #chatMessages { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
         .message-bubble { max-width: 75%; padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; word-wrap: break-word; font-size: 15px; }
         .message-bubble.sent { align-self: flex-end; background: #DCF8C6; border-top-right-radius: 0; }
         .message-bubble.received { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
         .sender-name { display: block; font-size: 12px; font-weight: 600; color: #075E54; margin-bottom: 2px; }
         .message-time { display: block; font-size: 10px; color: #888; text-align: right; margin-top: 2px; }
 
-        /* ان پٹ ایریا: اب یہ نارمل فلو میں ہے اور اسکرین کی چوڑائی کے مطابق نیچے رہے گا */
         #chatInputArea { background: #fff; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; border-top: 1px solid #e0e0e0; flex-shrink: 0; width: 100%; }
         #chatInputArea input { flex: 1; border: none; background: #f0f2f5; padding: 10px 16px; border-radius: 24px; font-size: 15px; outline: none; }
         #sendMessageBtn { background: #075E54; border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -172,8 +169,7 @@
             <p style="font-size:12px; opacity:0.6;">© 2026 ChitChat Pakistan</p>
         </footer>
     </div>
-
-    <script>
+        <script>
         // ============================================
         // FIREBASE CONFIG
         // ============================================
@@ -212,7 +208,7 @@
         let listenerAttached = false;
 
         // ============================================
-        // UI HELPERS (Auth & Tabs)
+        // AUTH & TABS SYSTEM
         // ============================================
         document.querySelectorAll('.toggle-password').forEach(el => {
             el.addEventListener('click', function() {
@@ -274,9 +270,8 @@
             authSection.style.display = 'none';
             chatSection.style.display = 'flex';
             logoutBtn.style.display = 'inline-block';
-            document.getElementById('authFooter').style.display = 'none'; // Hide footer on active chat
+            document.getElementById('authFooter').style.display = 'none';
             loadMessages();
-            // لوڈ ہوتے ہی اسکرین کی ہائٹ ایڈجسٹ کریں
             setTimeout(adjustViewport, 100);
         }
 
@@ -285,7 +280,7 @@
             chatSection.style.display = 'none';
             logoutBtn.style.display = 'none';
             chatMessages.innerHTML = '';
-            document.getElementById('authFooter').style.display = 'block'; // Show footer on auth page
+            document.getElementById('authFooter').style.display = 'block';
             
             if (messagesRef) {
                 messagesRef.off();
@@ -293,6 +288,7 @@
             listenerAttached = false;
         }
 
+        // Theme Switcher
         document.getElementById('themeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
             this.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
@@ -302,13 +298,14 @@
             document.body.classList.add('dark-mode');
             document.getElementById('themeToggle').textContent = '☀️';
         }
-                // ============================================
-        // CHAT LOGIC WITH DYNAMIC VIEWPORT RESIZER
-        // ============================================
 
+        // ============================================
+        // CHAT LOGIC (SINGLE LISTENER + SMOOTH SCROLL)
+        // ============================================
         auth.onAuthStateChanged(user => {
             loadingScreen.style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
+            // یہاں غلطی کو فکس کر کے دوبارہ فلیکس (flex) کر دیا گیا ہے
+            document.getElementById('appContainer').style.display = 'flex';
             if (user) {
                 currentUser = user;
                 initPresence(user);
@@ -319,7 +316,7 @@
             }
         });
 
-        // Presence Logic
+        // Online Status logic
         function initPresence(user) {
             const userStatusRef = statusRef.child(user.uid);
             database.ref('.info/connected').on('value', function(snapshot) {
@@ -334,7 +331,6 @@
             });
         }
 
-        // *** SINGLE LISTENER FOR MESSAGES ***
         function loadMessages() {
             if (listenerAttached) return;
             listenerAttached = true;
@@ -347,13 +343,10 @@
                     msg.key = snapshot.key;
                     displayMessage(msg);
                 }
-                
-                // Smooth Auto Scroll
                 scrollToBottom();
             });
         }
 
-        // Display Message
         function displayMessage(msg) {
             if (!msg || !msg.key) return;
             if (chatMessages.querySelector(`[data-id="${msg.key}"]`)) return;
@@ -380,7 +373,6 @@
             return text;
         }
 
-        // Auto Scroll Function
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
             setTimeout(() => {
@@ -391,32 +383,26 @@
             }, 150);
         }
 
-        // *** 🚨 واٹس ایپ اسٹائل کی بورڈ اینڈ اسکرین فکسر 🚨 ***
+        // *** واٹس ایپ والا کی بورڈ سسٹم ***
         function adjustViewport() {
             if (window.visualViewport) {
                 const height = window.visualViewport.height;
                 const appContainer = document.getElementById('appContainer');
                 
                 if (appContainer) {
-                    // اسکرین کے کٹنے کا مسئلہ ختم کرنے کے لیے باڈی اور کنٹینر کی ہائٹ بالکل درست فٹ کریں
                     document.body.style.height = `${height}px`;
                     appContainer.style.height = `${height}px`;
                 }
-                
-                // جیسے ہی کی بورڈ کھل کر اسکرین چھوٹی ہوگی، میسجز خود بخود اوپر کھسک جائیں گے
                 scrollToBottom();
             }
         }
 
-        // موبائل اسکرینز پر کی بورڈ کھلنے یا بند ہونے پر فوری سائز ایڈجسٹمنٹ
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', adjustViewport);
             window.visualViewport.addEventListener('scroll', adjustViewport);
         }
         window.addEventListener('resize', adjustViewport);
-        window.addEventListener('orientationchange', adjustViewport);
 
-        // ان پٹ فیلڈ پر فوکس ہوتے ہی اسکرین سیٹ کریں
         messageInput.addEventListener('focus', () => {
             setTimeout(adjustViewport, 80);
             setTimeout(scrollToBottom, 200);
@@ -442,7 +428,6 @@
             });
         }
 
-        // کی بورڈ بند ہونے سے روکنے کے لیے بھیجنے والے بٹن کے ہینڈلرز
         let lastSendTime = 0;
         function safeSend(e) {
             e.preventDefault(); 
