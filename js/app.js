@@ -466,3 +466,47 @@ document.addEventListener('keydown', function(e) {
 // ===== INITIALIZATION =====
 console.log("✅ App.js loaded successfully!");
 console.log("🔥 Phase 2 Menu Logic Active (Demo Mode)");
+
+// ============================================
+// VISUAL ADMIN CHECK (موبائل کے لیے - کنسول کے بغیر)
+// ============================================
+function showAdminStatus() {
+    const existingBox = document.getElementById('adminStatusBox');
+    if (existingBox) existingBox.remove();
+
+    const box = document.createElement('div');
+    box.id = 'adminStatusBox';
+    const isAdminActive = document.body.classList.contains('is-admin');
+    box.style.cssText = `
+        position: fixed; top: 70px; left: 10px; right: 10px; z-index: 99999;
+        padding: 12px 16px; border-radius: 10px; font-weight: bold; font-size: 15px;
+        text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        background: ${isAdminActive ? '#d4edda' : '#f8d7da'};
+        color: ${isAdminActive ? '#155724' : '#721c24'};
+        border: 1px solid ${isAdminActive ? '#c3e6cb' : '#f5c6cb'};
+    `;
+    box.textContent = isAdminActive ? '✅ ADMIN MODE ACTIVE (You have full control)' : '❌ ADMIN MODE NOT ACTIVE';
+    document.body.prepend(box);
+    
+    setTimeout(() => { if (box) box.remove(); }, 5000);
+}
+
+// لاگ ان ہونے پر اسے کال کریں
+const originalShowChat = showChat;
+showChat = function() {
+    originalShowChat();
+    setTimeout(showAdminStatus, 500);
+};
+
+// ہر بار جب صارف تبدیل ہو تو بھی چیک کریں
+const originalAuthState = auth.onAuthStateChanged;
+auth.onAuthStateChanged = function(callback) {
+    originalAuthState(function(user) {
+        callback(user);
+        if (user) {
+            setTimeout(showAdminStatus, 800);
+        }
+    });
+};
+
+console.log("✅ Visual Admin Check Added!");
