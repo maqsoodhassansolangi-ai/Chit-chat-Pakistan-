@@ -65,19 +65,20 @@
         .footer-links a { color: #fff; text-decoration: none; margin: 0 10px; font-size: 14px; }
 
         /* ===== CHAT ===== */
-        #chatSection { display: none; flex: 1; flex-direction: column; background: #ECE5DD; overflow: hidden; }
+        #chatSection { display: none; flex: 1; flex-direction: column; background: #ECE5DD; overflow: hidden; position: relative; height: 100%; }
         #chatHeader { background: #075E54; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
         #onlineCount { font-size: 13px; opacity: 0.8; }
         
-        #chatMessages { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 15px; }
+        /* 🚨 اہم تبدیلی: نیچے 90px پینڈنگ دی ہے تاکہ میسجز ٹیکسٹ باکس سے اوپر ہی رکیں اور اس کے پیچھے نہ چھپیں */
+        #chatMessages { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 90px !important; }
         .message-bubble { max-width: 75%; padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; word-wrap: break-word; font-size: 15px; }
         .message-bubble.sent { align-self: flex-end; background: #DCF8C6; border-top-right-radius: 0; }
         .message-bubble.received { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
         .sender-name { display: block; font-size: 12px; font-weight: 600; color: #075E54; margin-bottom: 2px; }
         .message-time { display: block; font-size: 10px; color: #888; text-align: right; margin-top: 2px; }
 
-        /* FIX: Changed position from 'fixed' to standard block so it fits nicely underneath chatMessages */
-        #chatInputArea { background: #fff; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; border-top: 1px solid #e0e0e0; }
+        /* 🚨 فکسڈ پوزیشن واپس: ٹیکسٹ باکس ہمیشہ نیچے فکس رہے گا لیکن پینڈنگ کی وجہ سے میسجز اس سے اوپر ہی ختم ہو جائیں گے */
+        #chatInputArea { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; border-top: 1px solid #e0e0e0; z-index: 1000; }
         #chatInputArea input { flex: 1; border: none; background: #f0f2f5; padding: 10px 16px; border-radius: 24px; font-size: 15px; outline: none; }
         #sendMessageBtn { background: #075E54; border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
@@ -435,7 +436,7 @@
             // Left empty to prevent unwanted keyboard collapses on different mobile browsers
         });
 
-        console.log("✅ Auto-Scroll & Layout Overlap Fixed Successfully!");
+        console.log("✅ Chat Box Fixed & Padding Applied Successfully!");
     </script>
 </body>
 </html>
