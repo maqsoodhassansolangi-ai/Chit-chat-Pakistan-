@@ -90,6 +90,21 @@ body.is-admin .admin-only { display: flex; }
 .room-tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .room-tab.active { background: #25D366; color: #111B21; font-weight: 600; }
 
+/* ===== DROPDOWN ADMIN ITEMS FIX ===== */
+.dropdown-item.admin-only {
+    display: none !important;
+    padding: 10px 14px;
+    border-left: 3px solid #075E54;
+    background: #f0f8ff;
+}
+body.is-admin .dropdown-item.admin-only {
+    display: flex !important;
+}
+body.dark-mode .dropdown-item.admin-only {
+    background: #1a2a33;
+    border-left-color: #25D366;
+}
+
 /* ===== DARK MODE ===== */
 body.dark-mode { background: #111B21; }
 body.dark-mode #chatSection { background: #0b141a; }
