@@ -1,5 +1,5 @@
 // ============================================
-// ChitChat Pakistan - app.js (Phase 2 Logic - FIXED)
+// ChitChat Pakistan - app.js (FIXED - Phase 1 + Phase 2)
 // ============================================
 
 // ===== FIREBASE CONFIG =====
@@ -42,7 +42,7 @@ const ADMIN_EMAIL = "maqsoodhassansolangi90@gmail.com";
 let isAdmin = false;
 
 // ============================================
-// AUTH & TABS SYSTEM (لاکڈ - فیز 1 سے)
+// AUTH & TABS SYSTEM (فیز 1 سے لاکڈ)
 // ============================================
 document.querySelectorAll('.toggle-password').forEach(el => {
     el.addEventListener('click', function() {
@@ -124,7 +124,7 @@ function showAuth() {
     listenerAttached = false;
 }
 
-// Theme Switcher
+// ===== THEME SWITCHER =====
 document.getElementById('themeToggle').addEventListener('click', function() {
     document.body.classList.toggle('dark-mode');
     this.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
@@ -143,7 +143,6 @@ auth.onAuthStateChanged(user => {
     document.getElementById('appContainer').style.display = 'flex';
     if (user) {
         currentUser = user;
-        // 👇 FIXED LINE 👇
         isAdmin = (user && user.email && user.email === ADMIN_EMAIL);
         if (isAdmin) {
             document.body.classList.add('is-admin');
@@ -295,7 +294,7 @@ messageInput.addEventListener('keydown', e => {
 // ===== DROPDOWN ITEMS CLICK HANDLER =====
 dropdownItems.forEach(item => {
     item.addEventListener('click', function(e) {
-        e.stopPropagation(); // ڈراپ ڈاؤن کو بند ہونے سے روکیں
+        e.stopPropagation();
         const action = this.getAttribute('data-action');
         console.log("Menu Action:", action);
         
@@ -346,11 +345,9 @@ function switchRoom(type) {
     currentRoomType = type;
     chatMessages.innerHTML = '';
     
-    // Update active tab
     menuTabs.forEach(tab => tab.classList.remove('active'));
     document.querySelector('[data-tab="rooms"]').classList.add('active');
     
-    // Update chat header
     const header = document.querySelector('#chatHeader h3');
     if (header) {
         const roomNames = {
@@ -361,7 +358,7 @@ function switchRoom(type) {
         header.textContent = roomNames[type] || '# Public Room';
     }
     
-    // For demo: load sample messages based on room type
+    // Demo messages (will be replaced with Firebase later)
     const demoMessages = {
         public: [
             { name: 'Admin', text: 'Welcome to Public Room! Everyone can join.', time: new Date().toLocaleTimeString() },
@@ -376,7 +373,6 @@ function switchRoom(type) {
         ]
     };
     
-    // Display demo messages (will be replaced with Firebase later)
     chatMessages.innerHTML = '';
     const msgs = demoMessages[type] || demoMessages.public;
     msgs.forEach(msg => {
@@ -401,7 +397,6 @@ function createNewRoom() {
     }
     const roomName = prompt('Enter room name:');
     if (roomName) {
-        // In Phase 3, this will connect to Firebase
         alert(`Room "${roomName}" created successfully! (Demo)`);
     }
 }
@@ -412,7 +407,6 @@ function deleteRoom() {
         return;
     }
     if (confirm('Are you sure you want to delete this room?')) {
-        // In Phase 3, this will connect to Firebase
         alert('Room deleted! (Demo)');
     }
 }
@@ -424,7 +418,6 @@ function renameRoom() {
     }
     const newName = prompt('Enter new room name:');
     if (newName) {
-        // In Phase 3, this will connect to Firebase
         alert(`Room renamed to "${newName}"! (Demo)`);
     }
 }
@@ -436,7 +429,6 @@ function sendAnnouncement() {
     }
     const msg = prompt('Enter announcement message:');
     if (msg) {
-        // In Phase 3, this will connect to Firebase
         alert(`Announcement sent: "${msg}" (Demo)`);
     }
 }
@@ -456,57 +448,11 @@ function openSettings() {
 // ===== KEYBOARD SHORTCUTS =====
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        // Close any open dropdowns
         document.querySelectorAll('.dropdown-menu').forEach(menu => {
             menu.style.display = 'none';
         });
     }
 });
 
-// ===== INITIALIZATION =====
 console.log("✅ App.js loaded successfully!");
 console.log("🔥 Phase 2 Menu Logic Active (Demo Mode)");
-
-// ============================================
-// VISUAL ADMIN CHECK (موبائل کے لیے - کنسول کے بغیر)
-// ============================================
-function showAdminStatus() {
-    const existingBox = document.getElementById('adminStatusBox');
-    if (existingBox) existingBox.remove();
-
-    const box = document.createElement('div');
-    box.id = 'adminStatusBox';
-    const isAdminActive = document.body.classList.contains('is-admin');
-    box.style.cssText = `
-        position: fixed; top: 70px; left: 10px; right: 10px; z-index: 99999;
-        padding: 12px 16px; border-radius: 10px; font-weight: bold; font-size: 15px;
-        text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        background: ${isAdminActive ? '#d4edda' : '#f8d7da'};
-        color: ${isAdminActive ? '#155724' : '#721c24'};
-        border: 1px solid ${isAdminActive ? '#c3e6cb' : '#f5c6cb'};
-    `;
-    box.textContent = isAdminActive ? '✅ ADMIN MODE ACTIVE (You have full control)' : '❌ ADMIN MODE NOT ACTIVE';
-    document.body.prepend(box);
-    
-    setTimeout(() => { if (box) box.remove(); }, 5000);
-}
-
-// لاگ ان ہونے پر اسے کال کریں
-const originalShowChat = showChat;
-showChat = function() {
-    originalShowChat();
-    setTimeout(showAdminStatus, 500);
-};
-
-// ہر بار جب صارف تبدیل ہو تو بھی چیک کریں
-const originalAuthState = auth.onAuthStateChanged;
-auth.onAuthStateChanged = function(callback) {
-    originalAuthState(function(user) {
-        callback(user);
-        if (user) {
-            setTimeout(showAdminStatus, 800);
-        }
-    });
-};
-
-console.log("✅ Visual Admin Check Added!");
