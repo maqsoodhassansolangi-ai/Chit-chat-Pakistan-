@@ -1,5 +1,5 @@
 // ============================================
-// ChitChat Pakistan - app.js (Phase 2 - Part 1 Update)
+// ChitChat Pakistan - app.js (Phase 2 - Fixed)
 // ============================================
 
 // ===== FIREBASE CONFIG =====
@@ -292,11 +292,10 @@ messageInput.addEventListener('keydown', e => {
     }
 });
 // ============================================
-// UPDATED MENU BAR LOGIC (صرف ایڈمن کنٹرولز)
+// FIXED MENU BAR LOGIC
 // ============================================
 
 // ===== DROPDOWN ITEMS CLICK HANDLER =====
-// اب صرف ایڈمن کنٹرولز رہیں گے
 dropdownItems.forEach(item => {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -304,7 +303,6 @@ dropdownItems.forEach(item => {
         console.log("Menu Action:", action);
         
         switch(action) {
-            // رومز کے آپشنز کو ہٹا دیا گیا ہے (اب وہ الگ ٹیب میں ہیں)
             case 'create':
                 createNewRoom();
                 break;
@@ -316,6 +314,12 @@ dropdownItems.forEach(item => {
                 break;
             case 'announcement':
                 sendAnnouncement();
+                break;
+            case 'public-chat':
+                switchRoom('public');
+                break;
+            case 'search':
+                searchMessages();
                 break;
             case 'settings':
                 openSettings();
@@ -330,24 +334,21 @@ dropdownItems.forEach(item => {
 });
 
 // ============================================
-// ROOM LIST TAB (مینیو بار کے نیچے الگ ٹیب)
+// FIX: ROOM LIST TOGGLE (صرف روم لسٹ کھولے، ڈراپ ڈاؤن نہیں)
 // ============================================
 
-// ===== DEMO ROOM DATA =====
 const demoRooms = [
     { id: 'room1', name: 'General Chat', type: 'public', members: 5 },
     { id: 'room2', name: 'Tech Talk', type: 'registered', members: 3 },
     { id: 'room3', name: 'Admin Only', type: 'private', members: 1 }
 ];
 
-// ===== TOGGLE ROOM LIST =====
 function toggleRoomList() {
     // پہلے مینیو کا ڈراپ ڈاؤن بند کریں (تا کہ اوورلیپ نہ ہو)
     document.querySelectorAll('.dropdown-menu').forEach(menu => {
         menu.style.display = 'none';
     });
 
-    // اب روم لسٹ کو ٹوگل کریں
     if (roomListContainer.style.display === 'none') {
         roomListContainer.style.display = 'block';
         renderRoomList(demoRooms);
@@ -356,7 +357,6 @@ function toggleRoomList() {
     }
 }
 
-// ===== RENDER ROOM LIST =====
 function renderRoomList(rooms) {
     roomList.innerHTML = '';
     rooms.forEach(room => {
@@ -370,47 +370,56 @@ function renderRoomList(rooms) {
     });
 }
 
-// ===== JOIN ROOM =====
 function joinRoom(roomId) {
     const room = demoRooms.find(r => r.id === roomId);
     if (!room) return alert('Room not found!');
-    
-    // In Phase 3, this will connect to Firebase
     alert(`You have joined: ${room.name}`);
     roomListContainer.style.display = 'none';
 }
 
-// ===== SEARCH ROOMS =====
 function searchRooms() {
     const query = roomSearchInput.value.trim().toLowerCase();
     if (!query) {
         renderRoomList(demoRooms);
         return;
     }
-    
     const filtered = demoRooms.filter(room => 
         room.name.toLowerCase().includes(query)
     );
     renderRoomList(filtered);
 }
 
-// ===== EVENT LISTENERS =====
 roomSearchBtn.addEventListener('click', searchRooms);
 roomSearchInput.addEventListener('keyup', e => {
     if (e.key === 'Enter') searchRooms();
 });
 
-// ===== ADD TO MENU BAR =====
-document.addEventListener('DOMContentLoaded', () => {
-    const roomsTab = document.querySelector('[data-tab="rooms"]');
-    if (roomsTab) {
-        // "Rooms" ٹیب پر کلک کرنے سے اب روم لسٹ کھلے گی
-        roomsTab.addEventListener('click', toggleRoomList);
-    }
+// ============================================
+// FIX: MENU TABS CLICK HANDLER (صرف مینیو ٹیبز کو کام کریں)
+// ============================================
+menuTabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        // اگر "Rooms" ٹیب ہے تو روم لسٹ کھولیں
+        if (this.dataset.tab === 'rooms') {
+            toggleRoomList();
+            return;
+        }
+        
+        // باقی ٹیبز کے لیے ڈراپ ڈاؤن کھولیں
+        const dropdown = this.querySelector('.dropdown-menu');
+        if (dropdown) {
+            // پہلے سب بند کریں
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu !== dropdown) menu.style.display = 'none';
+            });
+            // موجودہ کو ٹوگل کریں
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    });
 });
 
 // ============================================
-// ADMIN FUNCTIONS (صرف ایڈمن کے لیے)
+// ADMIN FUNCTIONS
 // ============================================
 function createNewRoom() {
     if (!isAdmin) {
@@ -455,6 +464,41 @@ function sendAnnouncement() {
     }
 }
 
+function switchRoom(type) {
+    const header = document.querySelector('#chatHeader h3');
+    if (header) {
+        const roomNames = {
+            public: '# Public Room',
+            registered: '# Registered Room',
+            private: '# Private Room'
+        };
+        header.textContent = roomNames[type] || '# Public Room';
+    }
+    chatMessages.innerHTML = '';
+    // Demo messages
+    const demoMsgs = [
+        { name: 'Admin', text: `Welcome to ${type} room!`, time: new Date().toLocaleTimeString() }
+    ];
+    demoMsgs.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'message-bubble received';
+        div.innerHTML = `
+            <span class="sender-name">${msg.name}</span>
+            <span>${msg.text}</span>
+            <span class="message-time">${msg.time}</span>
+        `;
+        chatMessages.appendChild(div);
+    });
+    setTimeout(scrollToBottom, 100);
+}
+
+function searchMessages() {
+    const query = prompt('Enter search term:');
+    if (query) {
+        alert(`Searching for "${query}"... (Demo)`);
+    }
+}
+
 function openSettings() {
     alert('Settings panel will open here in Phase 5!');
 }
@@ -470,4 +514,4 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log("✅ App.js loaded successfully!");
-console.log("🔥 Phase 2 - Room List Updated!");
+console.log("🔥 All Menu Tabs and Dropdowns Fixed!");
