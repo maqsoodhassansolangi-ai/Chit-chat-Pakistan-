@@ -210,8 +210,9 @@ body.dark-mode #authFooter { background: #0b141a; }
     cursor: pointer;
     transition: background 0.15s;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;  /* 👈 یہ لائن شامل کریں */
+    align-items: flex-start; /* 👈 اسے بھی بدل دیں */
+    gap: 2px;                /* 👈 فاصلہ کم کریں */
     border-bottom: 1px solid transparent;
 }
 .dropdown-item:hover { background: #f5f5f5; }
