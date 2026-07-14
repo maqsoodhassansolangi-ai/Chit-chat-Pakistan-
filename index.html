@@ -68,6 +68,19 @@
         <!-- Chat Section -->
         <div id="chatSection">
             <nav id="mainMenuBar" style="display:none;">
+              <!-- Room List & Controls -->
+<div id="roomListContainer" style="display:none;">
+    <div class="room-list-header">
+        <h3>Available Rooms</h3>
+        <div class="room-search-box">
+            <input type="text" id="roomSearchInput" placeholder="Search rooms...">
+            <button id="roomSearchBtn">🔍</button>
+        </div>
+    </div>
+    <ul id="roomList">
+        <!-- Rooms will be loaded here via JavaScript -->
+    </ul>
+</div>
                 <div class="menu-tabs">
                     <div class="menu-tab active" data-tab="rooms">
                         Rooms <span class="dropdown-arrow">▼</span>
