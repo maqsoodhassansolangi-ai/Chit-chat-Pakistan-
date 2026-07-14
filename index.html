@@ -22,7 +22,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         #loadingScreen p { color: #fff; font-size: 20px; margin-top: 20px; }
         
-        #appContainer { display: none; height: 100vh; display: flex; flex-direction: column; }
+        #appContainer { display: none; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         #mainHeader { background: #075E54; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .logo-text { font-size: 20px; font-weight: 700; }
         .header-right { display: flex; gap: 12px; }
@@ -65,18 +65,19 @@
         .footer-links a { color: #fff; text-decoration: none; margin: 0 10px; font-size: 14px; }
 
         /* ===== CHAT ===== */
-        #chatSection { display: none; flex: 1; flex-direction: column; height: 100%; background: #ECE5DD; }
+        #chatSection { display: none; flex: 1; flex-direction: column; background: #ECE5DD; overflow: hidden; }
         #chatHeader { background: #075E54; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
         #onlineCount { font-size: 13px; opacity: 0.8; }
         
-        #chatMessages { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+        #chatMessages { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 15px; }
         .message-bubble { max-width: 75%; padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; word-wrap: break-word; font-size: 15px; }
         .message-bubble.sent { align-self: flex-end; background: #DCF8C6; border-top-right-radius: 0; }
         .message-bubble.received { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
         .sender-name { display: block; font-size: 12px; font-weight: 600; color: #075E54; margin-bottom: 2px; }
         .message-time { display: block; font-size: 10px; color: #888; text-align: right; margin-top: 2px; }
 
-        #chatInputArea { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; border-top: 1px solid #e0e0e0; z-index: 1000; }
+        /* FIX: Changed position from 'fixed' to standard block so it fits nicely underneath chatMessages */
+        #chatInputArea { background: #fff; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; border-top: 1px solid #e0e0e0; }
         #chatInputArea input { flex: 1; border: none; background: #f0f2f5; padding: 10px 16px; border-radius: 24px; font-size: 15px; outline: none; }
         #sendMessageBtn { background: #075E54; border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
@@ -201,7 +202,6 @@
         const sendBtn = document.getElementById('sendMessageBtn');
         const onlineCount = document.getElementById('onlineCount');
 
-        // ALL GLOBAL VARIABLES DEFINED HERE (Fixes early execution reference errors)
         let messagesRef = database.ref('messages');
         let statusRef = database.ref('status');
         let currentUser = null;
@@ -270,6 +270,7 @@
             authSection.style.display = 'none';
             chatSection.style.display = 'flex';
             logoutBtn.style.display = 'inline-block';
+            document.getElementById('authFooter').style.display = 'none'; // Hide footer on active chat
             loadMessages();
         }
 
@@ -278,8 +279,8 @@
             chatSection.style.display = 'none';
             logoutBtn.style.display = 'none';
             chatMessages.innerHTML = '';
+            document.getElementById('authFooter').style.display = 'block'; // Show footer on auth page
             
-            // Safe cleanup of Firebase Listeners
             if (messagesRef) {
                 messagesRef.off();
             }
@@ -296,7 +297,7 @@
             document.getElementById('themeToggle').textContent = '☀️';
         }
                 // ============================================
-        // CHAT LOGIC (SINGLE LISTENER)
+        // CHAT LOGIC (SINGLE LISTENER WITH SMOOTH AUTO-SCROLL)
         // ============================================
 
         auth.onAuthStateChanged(user => {
@@ -337,14 +338,12 @@
             messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
                 const msg = snapshot.val();
                 if (msg) {
-                    msg.key = snapshot.key; // Safely attach the unique key
+                    msg.key = snapshot.key; // Safely attach unique key
                     displayMessage(msg);
                 }
                 
-                // Absolute Instant Scroll (After DOM is ready)
-                setTimeout(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 50);
+                // Bulletproof Scroll to Bottom
+                scrollToBottom();
             });
         }
 
@@ -375,13 +374,26 @@
             return text;
         }
 
-        // *** SEND MESSAGE WITH WHATSAPP-LIKE KEYBOARD ***
+        // Helper function for reliable auto-scrolling
+        function scrollToBottom() {
+            // Immediate scroll
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Backup scroll with brief delays to allow browser to calculate sizes/images rendering
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 50);
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 150);
+        }
+
+        // *** SEND MESSAGE ***
         function sendMessage() {
             if(!currentUser) return alert('Please login first!');
             const text = messageInput.value.trim();
             if(!text) return;
 
-            // Instantly clear the input field for smooth UI feel
+            // Clear input area instantly for snappy UX feel
             messageInput.value = '';
 
             messagesRef.push({
@@ -390,45 +402,40 @@
                 text: filterBadWords(text),
                 timestamp: Date.now()
             }).then(() => {
-                // Ensure viewport scrolls to the bottom after layout adjustments
-                setTimeout(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 50);
+                scrollToBottom();
             }).catch(err => {
                 console.error("Error sending message: ", err);
             });
         }
 
-        // Safe touch/click handler to keep keyboard strictly open and avoid double-triggering
+        // Keep keyboard active and prevent losing focus when tapping the Send Button
         let lastSendTime = 0;
         function safeSend(e) {
-            e.preventDefault(); // This blocks focus loss, so keyboard NEVER closes!
+            e.preventDefault(); 
             
             const now = Date.now();
-            if (now - lastSendTime < 300) return; // Prevents double sending on fast taps
+            if (now - lastSendTime < 300) return; 
             lastSendTime = now;
             
             sendMessage();
         }
 
-        // Binding to touch/mouse events instead of simple click to bypass browser's default keyboard close action
         sendBtn.addEventListener('mousedown', safeSend);
         sendBtn.addEventListener('touchstart', safeSend, { passive: false });
 
         messageInput.addEventListener('keydown', e => { 
             if(e.key === 'Enter') {
-                e.preventDefault(); // Prevents layout shifting/line break
+                e.preventDefault(); 
                 sendMessage(); 
             }
         });
 
-        // Prevent keyboard from closing unexpectedly
+        // Deliberately keep the keyboard open
         messageInput.addEventListener('blur', function(e) {
-            // We deliberately do nothing here
-            // Keyboard will remain active until the native physical Back button is pressed
+            // Left empty to prevent unwanted keyboard collapses on different mobile browsers
         });
 
-        console.log("✅ Flawless Fix Applied: Real-time Database Working & Keyboard Lock Enabled");
+        console.log("✅ Auto-Scroll & Layout Overlap Fixed Successfully!");
     </script>
 </body>
 </html>
