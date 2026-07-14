@@ -32,10 +32,8 @@ const onlineCount = document.getElementById('onlineCount');
 const mainMenuBar = document.getElementById('mainMenuBar');
 const menuTabs = document.querySelectorAll('.menu-tab');
 const dropdownItems = document.querySelectorAll('.dropdown-item');
-const roomPanel = document.getElementById('roomPanel');
-const roomList = document.getElementById('roomList');
-const roomSearchInput = document.getElementById('roomSearchInput');
-const roomSearchBtn = document.getElementById('roomSearchBtn');
+const roomTabsContainer = document.getElementById('roomTabsContainer');
+const roomTabs = document.querySelectorAll('.room-tab');
 const currentRoomName = document.getElementById('currentRoomName');
 const leaveRoomBtn = document.getElementById('leaveRoomBtn');
 
@@ -113,7 +111,7 @@ function showChat() {
     logoutBtn.style.display = 'inline-block';
     document.getElementById('authFooter').style.display = 'none';
     mainMenuBar.style.display = 'flex';
-    roomPanel.style.display = 'block';
+    roomTabsContainer.style.display = 'flex';
     loadMessages();
     setTimeout(adjustViewport, 100);
 }
@@ -125,7 +123,7 @@ function showAuth() {
     chatMessages.innerHTML = '';
     document.getElementById('authFooter').style.display = 'block';
     mainMenuBar.style.display = 'none';
-    roomPanel.style.display = 'none';
+    roomTabsContainer.style.display = 'none';
     
     if (messagesRef) {
         messagesRef.off();
@@ -181,6 +179,7 @@ function initPresence(user) {
         onlineCount.textContent = `🟢 ${snap.numChildren()} online`;
     });
 }
+
 // ============================================
 // MESSAGE LOADING & DISPLAY (فیز 1 سے لاکڈ)
 // ============================================
@@ -295,55 +294,64 @@ messageInput.addEventListener('keydown', e => {
         sendMessage(); 
     }
 });
-
 // ============================================
-// ROOM LOGIC (فیز 2 - مکمل کنٹرول)
+// ROOM LOGIC (فیز 2 - مکمل افقی ٹیب بار)
 // ============================================
-
-const demoRooms = [
-    { id: 'room1', name: 'General Chat', type: 'public' },
-    { id: 'room2', name: 'Tech Talk', type: 'registered' },
-    { id: 'room3', name: 'Admin Only', type: 'private' }
-];
-
-// روم پینل میں لسٹ دکھائیں
-function renderRoomList(rooms) {
-    roomList.innerHTML = '';
-    rooms.forEach(room => {
-        const li = document.createElement('li');
-        li.dataset.roomId = room.id;
-        li.innerHTML = `
-            <span>${room.name} (${room.type})</span>
-            <button class="btn-join" onclick="joinRoom('${room.id}')">Join</button>
-        `;
-        roomList.appendChild(li);
-    });
-}
 
 // ڈیفالٹ رومز لوڈ کریں
-renderRoomList(demoRooms);
+function loadRoomTabs() {
+    const roomNames = {
+        'room1': 'General Chat',
+        'room2': 'Tech Talk',
+        'room3': 'Admin Only'
+    };
+    roomTabs.forEach(tab => {
+        const id = tab.dataset.roomId;
+        tab.textContent = roomNames[id] || id;
+        tab.classList.remove('active');
+        if (id === currentRoomId) {
+            tab.classList.add('active');
+        }
+    });
+}
+loadRoomTabs();
+
+// روم ٹیب پر کلک کریں
+roomTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+        const roomId = this.dataset.roomId;
+        joinRoom(roomId);
+    });
+});
 
 // روم جوائن کریں
 function joinRoom(roomId) {
-    const room = demoRooms.find(r => r.id === roomId);
-    if (!room) return alert('Room not found!');
+    const roomNames = {
+        'room1': 'General Chat',
+        'room2': 'Tech Talk',
+        'room3': 'Admin Only'
+    };
+    const roomName = roomNames[roomId] || roomId;
     
     currentRoomId = roomId;
-    // ہیڈر کا نام اپ ڈیٹ کریں (سنک)
-    currentRoomName.textContent = `# ${room.name}`;
-    // Leave بٹن دکھائیں
+    currentRoomName.textContent = `# ${roomName}`;
     leaveRoomBtn.style.display = 'inline-block';
     
-    // (Dem موڈ) کامیابی کا پیغام
-    alert(`You have joined: ${room.name}`);
+    // ٹیبز کو اپ ڈیٹ کریں
+    roomTabs.forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.roomId === roomId) {
+            tab.classList.add('active');
+        }
+    });
     
-    // چیٹ میسیجز کو صاف کریں اور نئے روم کا ویلکم میسیج دکھائیں
+    // چیٹ میسیجز کو صاف کریں
     chatMessages.innerHTML = '';
     const welcomeMsg = document.createElement('div');
     welcomeMsg.className = 'message-bubble received';
     welcomeMsg.innerHTML = `
         <span class="sender-name">Admin</span>
-        <span>Welcome to ${room.name}!</span>
+        <span>Welcome to ${roomName}!</span>
         <span class="message-time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
     `;
     chatMessages.appendChild(welcomeMsg);
@@ -354,33 +362,21 @@ function joinRoom(roomId) {
 function leaveRoom() {
     if (confirm('Are you sure you want to leave this room?')) {
         currentRoomId = 'room1';
-        currentRoomName.textContent = '# Public Room';
+        currentRoomName.textContent = '# General Chat';
         leaveRoomBtn.style.display = 'none';
-        alert('You have left the room.');
         
-        // واپس پبلک روم میں جائیں
+        roomTabs.forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.roomId === 'room1') {
+                tab.classList.add('active');
+            }
+        });
+        
         chatMessages.innerHTML = '';
         joinRoom('room1');
     }
 }
 leaveRoomBtn.addEventListener('click', leaveRoom);
-
-// روم تلاش کریں
-function searchRooms() {
-    const query = roomSearchInput.value.trim().toLowerCase();
-    if (!query) {
-        renderRoomList(demoRooms);
-        return;
-    }
-    const filtered = demoRooms.filter(room => 
-        room.name.toLowerCase().includes(query)
-    );
-    renderRoomList(filtered);
-}
-roomSearchBtn.addEventListener('click', searchRooms);
-roomSearchInput.addEventListener('keyup', e => {
-    if (e.key === 'Enter') searchRooms();
-});
 
 // ============================================
 // MENU BAR LOGIC (کنٹرولز صرف ایڈمن کے لیے)
@@ -389,13 +385,7 @@ roomSearchInput.addEventListener('keyup', e => {
 // مینیو ٹیبز پر کلک کرنے کا ایونٹ
 menuTabs.forEach(tab => {
     tab.addEventListener('click', function(e) {
-        // اگر "Rooms" ٹیب ہے تو کچھ خاص نہیں (ڈراپ ڈاؤن ہوور سے کھلے گا)
-        if (this.dataset.tab === 'rooms') {
-            // بس یقینی بنائیں کہ ڈراپ ڈاؤن کلک سے بند نہ ہو
-            return;
-        }
-        
-        // باقی ٹیبز کے لیے ڈراپ ڈاؤن کھولیں
+        if (this.dataset.tab === 'rooms') return;
         const dropdown = this.querySelector('.dropdown-menu');
         if (dropdown) {
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
@@ -411,7 +401,6 @@ dropdownItems.forEach(item => {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
         const action = this.getAttribute('data-action');
-        console.log("Menu Action:", action);
         
         switch(action) {
             case 'create':
@@ -424,14 +413,11 @@ dropdownItems.forEach(item => {
                 renameRoom();
                 break;
             case 'public-chat':
-                // پبلک چیٹ پر سوئچ کریں
                 joinRoom('room1');
                 break;
             case 'settings':
                 openSettings();
                 break;
-            default:
-                alert('This feature is coming soon!');
         }
     });
 });
@@ -444,9 +430,21 @@ function createNewRoom() {
     }
     const roomName = prompt('Enter room name:');
     if (roomName) {
-        const newRoom = { id: 'room' + (demoRooms.length + 1), name: roomName, type: 'private' };
-        demoRooms.push(newRoom);
-        renderRoomList(demoRooms);
+        // اس ڈیمو میں ہم نیا ٹیب بنائیں گے
+        const newId = 'room' + (roomTabs.length + 1);
+        const newTab = document.createElement('button');
+        newTab.className = 'room-tab';
+        newTab.dataset.roomId = newId;
+        newTab.textContent = roomName;
+        document.querySelector('.room-tabs-scroll').appendChild(newTab);
+        
+        // نیا ٹیب کلک ایونٹ
+        newTab.addEventListener('click', function() {
+            joinRoom(this.dataset.roomId);
+        });
+        
+        // روم جوائن کریں
+        joinRoom(newId);
         alert(`Room "${roomName}" created successfully!`);
     }
 }
@@ -456,17 +454,17 @@ function deleteRoom() {
         alert('Only Admin can delete rooms!');
         return;
     }
-    if (confirm('Are you sure you want to delete the current room?')) {
-        const index = demoRooms.findIndex(r => r.id === currentRoomId);
-        if (index !== -1) {
-            demoRooms.splice(index, 1);
-            renderRoomList(demoRooms);
-            // واپس پبلک روم پر جائیں
-            joinRoom('room1');
-            alert('Room deleted successfully!');
-        } else {
-            alert('Room not found!');
+    if (currentRoomId === 'room1') {
+        alert('Cannot delete the default room!');
+        return;
+    }
+    if (confirm('Are you sure you want to delete this room?')) {
+        const tabToRemove = document.querySelector(`.room-tab[data-room-id="${currentRoomId}"]`);
+        if (tabToRemove) {
+            tabToRemove.remove();
         }
+        joinRoom('room1');
+        alert('Room deleted successfully!');
     }
 }
 
@@ -477,11 +475,9 @@ function renameRoom() {
     }
     const newName = prompt('Enter new room name:');
     if (newName) {
-        const room = demoRooms.find(r => r.id === currentRoomId);
-        if (room) {
-            room.name = newName;
-            renderRoomList(demoRooms);
-            // ہیڈر کا نام بھی اپ ڈیٹ کریں
+        const tab = document.querySelector(`.room-tab[data-room-id="${currentRoomId}"]`);
+        if (tab) {
+            tab.textContent = newName;
             currentRoomName.textContent = `# ${newName}`;
             alert(`Room renamed to "${newName}"!`);
         }
@@ -493,4 +489,4 @@ function openSettings() {
 }
 
 console.log("✅ App.js loaded successfully!");
-console.log("🔥 Phase 2 Complete! All room controls synced!");
+console.log("🔥 Phase 2 Complete! Room Tabs Implemented!");
