@@ -93,7 +93,8 @@
     </style>
 </head>
 <body>
-      <div id="loadingScreen">
+
+    <div id="loadingScreen">
         <div class="spinner"></div>
         <p>ChitChat Pakistan</p>
     </div>
@@ -138,8 +139,7 @@
                 <button id="guestLoginBtn" class="auth-btn guest">Continue as Guest</button>
             </div>
         </div>
-
-        <div id="chatSection">
+                <div id="chatSection">
             <div id="chatHeader">
                 <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
             </div>
@@ -172,6 +172,9 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+
+        // ===== ADMIN EMAIL SETUP =====
+        const ADMIN_EMAIL = "maqsoodhassansolangi90@gmail.com";
 
         // ===== DOM =====
         const loginForm = document.getElementById('loginForm');
@@ -226,21 +229,21 @@
             const pass = document.getElementById('loginPassword').value.trim();
             auth.signInWithEmailAndPassword(email, pass)
                 .then(() => { showChat(); })
-                .catch(err => alert('Login Error: ' + err.message));
+                .catch(err => alert(err.message));
         });
 
         // ===== GOOGLE =====
         googleBtn.addEventListener('click', () => {
             auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
                 .then(() => showChat())
-                .catch(err => alert('Google Error: ' + err.message));
+                .catch(err => alert(err.message));
         });
 
         // ===== GUEST =====
         guestBtn.addEventListener('click', () => {
             auth.signInAnonymously()
                 .then(() => showChat())
-                .catch(err => alert('Guest Error: ' + err.message));
+                .catch(err => alert(err.message));
         });
 
         // ===== LOGOUT =====
@@ -364,20 +367,30 @@
                 key: newRef.key
             }).then(() => {
                 messageInput.value = '';
-                messageInput.focus();
+                // Keyboard stay up fix
+                setTimeout(() => {
+                    messageInput.focus();
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
             });
         }
 
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendMessage(); });
 
+        // FIX 3 & 4: Keyboard stay stable + Auto Scroll
         messageInput.addEventListener('focus', function() {
+            // Ensure keyboard stays up
             setTimeout(() => {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }, 300);
         });
 
-        console.log("✅ All systems fixed!");
+        // Manual scroll enable
+        chatMessages.style.overflowY = 'auto';
+        chatMessages.style.touchAction = 'pan-y';
+
+        console.log("✅ All systems fixed! Admin Email:", ADMIN_EMAIL);
     </script>
 </body>
 </html>
