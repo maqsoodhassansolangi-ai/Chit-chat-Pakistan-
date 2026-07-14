@@ -1,5 +1,5 @@
 // ============================================
-// ChitChat Pakistan - app.js (FIXED - Phase 1 + Phase 2)
+// ChitChat Pakistan - app.js (Phase 2 - Part 1 Update)
 // ============================================
 
 // ===== FIREBASE CONFIG =====
@@ -32,6 +32,10 @@ const onlineCount = document.getElementById('onlineCount');
 const mainMenuBar = document.getElementById('mainMenuBar');
 const menuTabs = document.querySelectorAll('.menu-tab');
 const dropdownItems = document.querySelectorAll('.dropdown-item');
+const roomListContainer = document.getElementById('roomListContainer');
+const roomList = document.getElementById('roomList');
+const roomSearchInput = document.getElementById('roomSearchInput');
+const roomSearchBtn = document.getElementById('roomSearchBtn');
 
 // ===== GLOBAL VARIABLES =====
 let messagesRef = database.ref('messages');
@@ -288,10 +292,11 @@ messageInput.addEventListener('keydown', e => {
     }
 });
 // ============================================
-// MENU BAR LOGIC - Phase 2 (NEW FEATURES)
+// UPDATED MENU BAR LOGIC (صرف ایڈمن کنٹرولز)
 // ============================================
 
 // ===== DROPDOWN ITEMS CLICK HANDLER =====
+// اب صرف ایڈمن کنٹرولز رہیں گے
 dropdownItems.forEach(item => {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -299,15 +304,7 @@ dropdownItems.forEach(item => {
         console.log("Menu Action:", action);
         
         switch(action) {
-            case 'public':
-                switchRoom('public');
-                break;
-            case 'registered':
-                switchRoom('registered');
-                break;
-            case 'private':
-                switchRoom('private');
-                break;
+            // رومز کے آپشنز کو ہٹا دیا گیا ہے (اب وہ الگ ٹیب میں ہیں)
             case 'create':
                 createNewRoom();
                 break;
@@ -319,12 +316,6 @@ dropdownItems.forEach(item => {
                 break;
             case 'announcement':
                 sendAnnouncement();
-                break;
-            case 'public-chat':
-                switchRoom('public');
-                break;
-            case 'search':
-                searchMessages();
                 break;
             case 'settings':
                 openSettings();
@@ -338,58 +329,89 @@ dropdownItems.forEach(item => {
     });
 });
 
-// ===== ROOM SWITCHING =====
-let currentRoomType = 'public';
+// ============================================
+// ROOM LIST TAB (مینیو بار کے نیچے الگ ٹیب)
+// ============================================
 
-function switchRoom(type) {
-    currentRoomType = type;
-    chatMessages.innerHTML = '';
-    
-    menuTabs.forEach(tab => tab.classList.remove('active'));
-    document.querySelector('[data-tab="rooms"]').classList.add('active');
-    
-    const header = document.querySelector('#chatHeader h3');
-    if (header) {
-        const roomNames = {
-            public: '# Public Room',
-            registered: '# Registered Room',
-            private: '# Private Room'
-        };
-        header.textContent = roomNames[type] || '# Public Room';
-    }
-    
-    // Demo messages (will be replaced with Firebase later)
-    const demoMessages = {
-        public: [
-            { name: 'Admin', text: 'Welcome to Public Room! Everyone can join.', time: new Date().toLocaleTimeString() },
-            { name: 'Guest', text: 'Hello everyone!', time: new Date().toLocaleTimeString() }
-        ],
-        registered: [
-            { name: 'Admin', text: 'Welcome to Registered Room! Sign in required.', time: new Date().toLocaleTimeString() },
-            { name: 'User1', text: 'Glad to be here!', time: new Date().toLocaleTimeString() }
-        ],
-        private: [
-            { name: 'Admin', text: 'Welcome to Private Room! Invite only.', time: new Date().toLocaleTimeString() }
-        ]
-    };
-    
-    chatMessages.innerHTML = '';
-    const msgs = demoMessages[type] || demoMessages.public;
-    msgs.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'message-bubble received';
-        div.innerHTML = `
-            <span class="sender-name">${msg.name}</span>
-            <span>${msg.text}</span>
-            <span class="message-time">${msg.time}</span>
-        `;
-        chatMessages.appendChild(div);
+// ===== DEMO ROOM DATA =====
+const demoRooms = [
+    { id: 'room1', name: 'General Chat', type: 'public', members: 5 },
+    { id: 'room2', name: 'Tech Talk', type: 'registered', members: 3 },
+    { id: 'room3', name: 'Admin Only', type: 'private', members: 1 }
+];
+
+// ===== TOGGLE ROOM LIST =====
+function toggleRoomList() {
+    // پہلے مینیو کا ڈراپ ڈاؤن بند کریں (تا کہ اوورلیپ نہ ہو)
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
     });
-    
-    setTimeout(scrollToBottom, 100);
+
+    // اب روم لسٹ کو ٹوگل کریں
+    if (roomListContainer.style.display === 'none') {
+        roomListContainer.style.display = 'block';
+        renderRoomList(demoRooms);
+    } else {
+        roomListContainer.style.display = 'none';
+    }
 }
 
-// ===== ADMIN FUNCTIONS =====
+// ===== RENDER ROOM LIST =====
+function renderRoomList(rooms) {
+    roomList.innerHTML = '';
+    rooms.forEach(room => {
+        const li = document.createElement('li');
+        li.dataset.roomId = room.id;
+        li.innerHTML = `
+            <span>${room.name} (${room.type})</span>
+            <button class="btn-join" onclick="joinRoom('${room.id}')">Join</button>
+        `;
+        roomList.appendChild(li);
+    });
+}
+
+// ===== JOIN ROOM =====
+function joinRoom(roomId) {
+    const room = demoRooms.find(r => r.id === roomId);
+    if (!room) return alert('Room not found!');
+    
+    // In Phase 3, this will connect to Firebase
+    alert(`You have joined: ${room.name}`);
+    roomListContainer.style.display = 'none';
+}
+
+// ===== SEARCH ROOMS =====
+function searchRooms() {
+    const query = roomSearchInput.value.trim().toLowerCase();
+    if (!query) {
+        renderRoomList(demoRooms);
+        return;
+    }
+    
+    const filtered = demoRooms.filter(room => 
+        room.name.toLowerCase().includes(query)
+    );
+    renderRoomList(filtered);
+}
+
+// ===== EVENT LISTENERS =====
+roomSearchBtn.addEventListener('click', searchRooms);
+roomSearchInput.addEventListener('keyup', e => {
+    if (e.key === 'Enter') searchRooms();
+});
+
+// ===== ADD TO MENU BAR =====
+document.addEventListener('DOMContentLoaded', () => {
+    const roomsTab = document.querySelector('[data-tab="rooms"]');
+    if (roomsTab) {
+        // "Rooms" ٹیب پر کلک کرنے سے اب روم لسٹ کھلے گی
+        roomsTab.addEventListener('click', toggleRoomList);
+    }
+});
+
+// ============================================
+// ADMIN FUNCTIONS (صرف ایڈمن کے لیے)
+// ============================================
 function createNewRoom() {
     if (!isAdmin) {
         alert('Only Admin can create new rooms!');
@@ -433,14 +455,6 @@ function sendAnnouncement() {
     }
 }
 
-// ===== OTHER FUNCTIONS =====
-function searchMessages() {
-    const query = prompt('Enter search term:');
-    if (query) {
-        alert(`Searching for "${query}"... (Demo)`);
-    }
-}
-
 function openSettings() {
     alert('Settings panel will open here in Phase 5!');
 }
@@ -451,111 +465,9 @@ document.addEventListener('keydown', function(e) {
         document.querySelectorAll('.dropdown-menu').forEach(menu => {
             menu.style.display = 'none';
         });
-    }
-});
-// ============================================
-// PHASE 2 - PART 1: ROOM CONTROLS
-// ============================================
-
-// ===== DOM ELEMENTS =====
-const roomListContainer = document.getElementById('roomListContainer');
-const roomList = document.getElementById('roomList');
-const roomSearchInput = document.getElementById('roomSearchInput');
-const roomSearchBtn = document.getElementById('roomSearchBtn');
-
-// ===== DEMO ROOM DATA (will be replaced with Firebase later) =====
-const demoRooms = [
-    { id: 'room1', name: 'General Chat', type: 'public', members: 5 },
-    { id: 'room2', name: 'Tech Talk', type: 'registered', members: 3 },
-    { id: 'room3', name: 'Admin Only', type: 'private', members: 1 }
-];
-
-// ===== TOGGLE ROOM LIST =====
-function toggleRoomList() {
-    if (roomListContainer.style.display === 'none') {
-        roomListContainer.style.display = 'block';
-        renderRoomList(demoRooms);
-    } else {
         roomListContainer.style.display = 'none';
     }
-}
-
-// ===== RENDER ROOM LIST =====
-function renderRoomList(rooms) {
-    roomList.innerHTML = '';
-    rooms.forEach(room => {
-        const li = document.createElement('li');
-        li.dataset.roomId = room.id;
-        
-        const isJoined = false; // Demo: will be replaced with actual logic
-        
-        li.innerHTML = `
-            <span>${room.name} (${room.type})</span>
-            <div class="room-list-actions">
-                ${isJoined 
-                    ? `<button class="btn-leave" onclick="leaveRoom('${room.id}')">Leave</button>`
-                    : `<button class="btn-join" onclick="joinRoom('${room.id}')">Join</button>`
-                }
-            </div>
-        `;
-        roomList.appendChild(li);
-    });
-}
-
-// ===== JOIN ROOM =====
-function joinRoom(roomId) {
-    const room = demoRooms.find(r => r.id === roomId);
-    if (!room) return alert('Room not found!');
-    
-    // In Phase 3, this will connect to Firebase
-    alert(`You have joined: ${room.name}`);
-    renderRoomList(demoRooms);
-    roomListContainer.style.display = 'none';
-}
-
-// ===== LEAVE ROOM =====
-function leaveRoom(roomId) {
-    const room = demoRooms.find(r => r.id === roomId);
-    if (!room) return alert('Room not found!');
-    
-    if (confirm(`Are you sure you want to leave ${room.name}?`)) {
-        // In Phase 3, this will connect to Firebase
-        alert(`You have left: ${room.name}`);
-        renderRoomList(demoRooms);
-    }
-}
-
-// ===== SEARCH ROOMS =====
-function searchRooms() {
-    const query = roomSearchInput.value.trim().toLowerCase();
-    if (!query) {
-        renderRoomList(demoRooms);
-        return;
-    }
-    
-    const filtered = demoRooms.filter(room => 
-        room.name.toLowerCase().includes(query)
-    );
-    renderRoomList(filtered);
-}
-
-// ===== EVENT LISTENERS =====
-roomSearchBtn.addEventListener('click', searchRooms);
-roomSearchInput.addEventListener('keyup', e => {
-    if (e.key === 'Enter') searchRooms();
 });
-
-// ===== ADD TO MENU BAR =====
-// Add a "Rooms" button to the menu bar if not already present
-document.addEventListener('DOMContentLoaded', () => {
-    const roomsTab = document.querySelector('[data-tab="rooms"]');
-    if (roomsTab) {
-        // Add click handler to open room list
-        roomsTab.addEventListener('click', toggleRoomList);
-    }
-});
-
-console.log("✅ Phase 2 - Part 1 loaded: Join, Leave, Search Rooms");
 
 console.log("✅ App.js loaded successfully!");
-console.log("🔥 Phase 2 Menu Logic Active (Demo Mode)");
+console.log("🔥 Phase 2 - Room List Updated!");
