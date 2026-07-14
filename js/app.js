@@ -453,6 +453,109 @@ document.addEventListener('keydown', function(e) {
         });
     }
 });
+// ============================================
+// PHASE 2 - PART 1: ROOM CONTROLS
+// ============================================
+
+// ===== DOM ELEMENTS =====
+const roomListContainer = document.getElementById('roomListContainer');
+const roomList = document.getElementById('roomList');
+const roomSearchInput = document.getElementById('roomSearchInput');
+const roomSearchBtn = document.getElementById('roomSearchBtn');
+
+// ===== DEMO ROOM DATA (will be replaced with Firebase later) =====
+const demoRooms = [
+    { id: 'room1', name: 'General Chat', type: 'public', members: 5 },
+    { id: 'room2', name: 'Tech Talk', type: 'registered', members: 3 },
+    { id: 'room3', name: 'Admin Only', type: 'private', members: 1 }
+];
+
+// ===== TOGGLE ROOM LIST =====
+function toggleRoomList() {
+    if (roomListContainer.style.display === 'none') {
+        roomListContainer.style.display = 'block';
+        renderRoomList(demoRooms);
+    } else {
+        roomListContainer.style.display = 'none';
+    }
+}
+
+// ===== RENDER ROOM LIST =====
+function renderRoomList(rooms) {
+    roomList.innerHTML = '';
+    rooms.forEach(room => {
+        const li = document.createElement('li');
+        li.dataset.roomId = room.id;
+        
+        const isJoined = false; // Demo: will be replaced with actual logic
+        
+        li.innerHTML = `
+            <span>${room.name} (${room.type})</span>
+            <div class="room-list-actions">
+                ${isJoined 
+                    ? `<button class="btn-leave" onclick="leaveRoom('${room.id}')">Leave</button>`
+                    : `<button class="btn-join" onclick="joinRoom('${room.id}')">Join</button>`
+                }
+            </div>
+        `;
+        roomList.appendChild(li);
+    });
+}
+
+// ===== JOIN ROOM =====
+function joinRoom(roomId) {
+    const room = demoRooms.find(r => r.id === roomId);
+    if (!room) return alert('Room not found!');
+    
+    // In Phase 3, this will connect to Firebase
+    alert(`You have joined: ${room.name}`);
+    renderRoomList(demoRooms);
+    roomListContainer.style.display = 'none';
+}
+
+// ===== LEAVE ROOM =====
+function leaveRoom(roomId) {
+    const room = demoRooms.find(r => r.id === roomId);
+    if (!room) return alert('Room not found!');
+    
+    if (confirm(`Are you sure you want to leave ${room.name}?`)) {
+        // In Phase 3, this will connect to Firebase
+        alert(`You have left: ${room.name}`);
+        renderRoomList(demoRooms);
+    }
+}
+
+// ===== SEARCH ROOMS =====
+function searchRooms() {
+    const query = roomSearchInput.value.trim().toLowerCase();
+    if (!query) {
+        renderRoomList(demoRooms);
+        return;
+    }
+    
+    const filtered = demoRooms.filter(room => 
+        room.name.toLowerCase().includes(query)
+    );
+    renderRoomList(filtered);
+}
+
+// ===== EVENT LISTENERS =====
+roomSearchBtn.addEventListener('click', searchRooms);
+roomSearchInput.addEventListener('keyup', e => {
+    if (e.key === 'Enter') searchRooms();
+});
+
+// ===== ADD TO MENU BAR =====
+// Add a "Rooms" button to the menu bar if not already present
+document.addEventListener('DOMContentLoaded', () => {
+    const roomsTab = document.querySelector('[data-tab="rooms"]');
+    if (roomsTab) {
+        // Add click handler to open room list
+        roomsTab.addEventListener('click', toggleRoomList);
+    }
+});
+
+console.log("✅ Phase 2 - Part 1 loaded: Join, Leave, Search Rooms");
 
 console.log("✅ App.js loaded successfully!");
 console.log("🔥 Phase 2 Menu Logic Active (Demo Mode)");
