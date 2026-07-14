@@ -1,5 +1,5 @@
 // ============================================
-// ChitChat Pakistan - app.js (Phase 2 Logic)
+// ChitChat Pakistan - app.js (Phase 2 Logic - FIXED)
 // ============================================
 
 // ===== FIREBASE CONFIG =====
@@ -143,7 +143,8 @@ auth.onAuthStateChanged(user => {
     document.getElementById('appContainer').style.display = 'flex';
     if (user) {
         currentUser = user;
-        isAdmin = (user.email === ADMIN_EMAIL);
+        // 👇 FIXED LINE 👇
+        isAdmin = (user && user.email && user.email === ADMIN_EMAIL);
         if (isAdmin) {
             document.body.classList.add('is-admin');
         } else {
