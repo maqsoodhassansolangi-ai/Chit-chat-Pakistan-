@@ -116,87 +116,6 @@
                 <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
             </div>
         </header>
-
-        <!-- ===== MENU BAR (Instagram Style + Facebook Rooms) ===== -->
-        <nav id="mainMenuBar">
-            <div class="menu-tabs">
-                <!-- Rooms Tab -->
-                <div class="menu-tab active" data-tab="rooms">
-                    Rooms <span class="dropdown-arrow">▼</span>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item" data-action="public">
-                            <span class="icon">🌍</span>
-                            <div class="item-details">
-                                <span class="item-title">Public Room</span>
-                                <span class="item-desc">Everyone can join</span>
-                            </div>
-                        </div>
-                        <div class="dropdown-item" data-action="registered">
-                            <span class="icon">🔒</span>
-                            <div class="item-details">
-                                <span class="item-title">Registered Room</span>
-                                <span class="item-desc">Sign in required</span>
-                            </div>
-                        </div>
-                        <div class="dropdown-item" data-action="private">
-                            <span class="icon">🔐</span>
-                            <div class="item-details">
-                                <span class="item-title">Private Room</span>
-                                <span class="item-desc">Invite only</span>
-                            </div>
-                        </div>
-                        <hr class="dropdown-divider">
-                        <div class="dropdown-item admin-only" data-action="create">
-                            <span class="icon">➕</span>
-                            <div class="item-details">
-                                <span class="item-title">Create New Room</span>
-                                <span class="item-desc">Admin only</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Chat Tab -->
-                <div class="menu-tab" data-tab="chat">
-                    Chat <span class="dropdown-arrow">▼</span>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item" data-action="public-chat">
-                            <span class="icon">💬</span>
-                            <div class="item-details">
-                                <span class="item-title">Public Chat</span>
-                                <span class="item-desc">Main conversation</span>
-                            </div>
-                        </div>
-                        <div class="dropdown-item" data-action="search">
-                            <span class="icon">🔍</span>
-                            <div class="item-details">
-                                <span class="item-title">Search Messages</span>
-                                <span class="item-desc">Find old chats</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Profile Tab -->
-                <div class="menu-tab" data-tab="profile">
-                    Profile <span class="dropdown-arrow">▼</span>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item" data-action="settings">
-                            <span class="icon">⚙️</span>
-                            <div class="item-details">
-                                <span class="item-title">Settings</span>
-                                <span class="item-desc">Account preferences</span>
-                            </div>
-                        </div>
-                        <div class="dropdown-item" data-action="logout">
-                            <span class="icon">🚪</span>
-                            <div class="item-details">
-                                <span class="item-title">Logout</span>
-                                <span class="item-desc">Sign out</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
                 <!-- Auth Section -->
         <div id="authSection">
             <div class="auth-card">
@@ -232,6 +151,89 @@
 
         <!-- Chat Section -->
         <div id="chatSection">
+            
+            <!-- 👇 مینیو بار اب بالکل صحیح جگہ پر ہے (چیٹ کے اندر) 👇 -->
+            <nav id="mainMenuBar" style="display:none;">
+                <div class="menu-tabs">
+                    <!-- Rooms Tab -->
+                    <div class="menu-tab active" data-tab="rooms">
+                        Rooms <span class="dropdown-arrow">▼</span>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item" data-action="public">
+                                <span class="icon">🌍</span>
+                                <div class="item-details">
+                                    <span class="item-title">Public Room</span>
+                                    <span class="item-desc">Everyone can join</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-item" data-action="registered">
+                                <span class="icon">🔒</span>
+                                <div class="item-details">
+                                    <span class="item-title">Registered Room</span>
+                                    <span class="item-desc">Sign in required</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-item" data-action="private">
+                                <span class="icon">🔐</span>
+                                <div class="item-details">
+                                    <span class="item-title">Private Room</span>
+                                    <span class="item-desc">Invite only</span>
+                                </div>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <div class="dropdown-item admin-only" data-action="create">
+                                <span class="icon">➕</span>
+                                <div class="item-details">
+                                    <span class="item-title">Create New Room</span>
+                                    <span class="item-desc">Admin only</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Chat Tab -->
+                    <div class="menu-tab" data-tab="chat">
+                        Chat <span class="dropdown-arrow">▼</span>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item" data-action="public-chat">
+                                <span class="icon">💬</span>
+                                <div class="item-details">
+                                    <span class="item-title">Public Chat</span>
+                                    <span class="item-desc">Main conversation</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-item" data-action="search">
+                                <span class="icon">🔍</span>
+                                <div class="item-details">
+                                    <span class="item-title">Search Messages</span>
+                                    <span class="item-desc">Find old chats</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Profile Tab -->
+                    <div class="menu-tab" data-tab="profile">
+                        Profile <span class="dropdown-arrow">▼</span>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item" data-action="settings">
+                                <span class="icon">⚙️</span>
+                                <div class="item-details">
+                                    <span class="item-title">Settings</span>
+                                    <span class="item-desc">Account preferences</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-item" data-action="logout">
+                                <span class="icon">🚪</span>
+                                <div class="item-details">
+                                    <span class="item-title">Logout</span>
+                                    <span class="item-desc">Sign out</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <!-- 👆 مینیو بار یہاں ختم ہوتا ہے 👆 -->
+
             <div id="chatHeader">
                 <div><h3># Public Room</h3><span id="onlineCount">🟢 0 online</span></div>
             </div>
@@ -353,6 +355,7 @@
             chatSection.style.display = 'flex';
             logoutBtn.style.display = 'inline-block';
             document.getElementById('authFooter').style.display = 'none';
+            document.getElementById('mainMenuBar').style.display = 'flex';  // **مینیو بار دکھائیں**
             loadMessages();
             setTimeout(adjustViewport, 100);
         }
@@ -363,6 +366,7 @@
             logoutBtn.style.display = 'none';
             chatMessages.innerHTML = '';
             document.getElementById('authFooter').style.display = 'block';
+            document.getElementById('mainMenuBar').style.display = 'none';  // **مینیو بار چھپائیں**
             
             if (messagesRef) {
                 messagesRef.off();
@@ -528,4 +532,4 @@
         });
     </script>
 </body>
-</html>
+                                        </html>
