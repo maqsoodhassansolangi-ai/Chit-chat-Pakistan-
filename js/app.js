@@ -385,19 +385,15 @@ leaveRoomBtn.addEventListener('click', leaveRoom);
 // مینیو ٹیبز پر کلک کرنے کا ایونٹ
 menuTabs.forEach(tab => {
     tab.addEventListener('click', function(e) {
-        if (this.dataset.tab === 'rooms') {
-    const dropdown = this.querySelector('.dropdown-menu');
-    if (dropdown) {
-        dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
-    }
-    return;
-        }
+        // پہلے تمام ڈراپ ڈاؤنز کو بند کریں
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+
+        // اب موجودہ ٹیب کا ڈراپ ڈاؤن کھولیں
         const dropdown = this.querySelector('.dropdown-menu');
         if (dropdown) {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                if (menu !== dropdown) menu.style.display = 'none';
-            });
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
         }
     });
 });
