@@ -1,5 +1,5 @@
 // ============================================
-// ChitChat Pakistan - app.js (Phase 2 - Complete)
+// ChitChat Pakistan - app.js (FINAL UI FIX)
 // ============================================
 
 // ===== FIREBASE CONFIG =====
@@ -178,8 +178,7 @@ function initPresence(user) {
     statusRef.orderByChild('state').equalTo('online').on('value', snap => {
         onlineCount.textContent = `🟢 ${snap.numChildren()} online`;
     });
-}
-
+                                       }
 // ============================================
 // MESSAGE LOADING & DISPLAY (فیز 1 سے لاکڈ)
 // ============================================
@@ -294,11 +293,10 @@ messageInput.addEventListener('keydown', e => {
         sendMessage(); 
     }
 });
+
 // ============================================
 // ROOM LOGIC (فیز 2 - مکمل افقی ٹیب بار)
 // ============================================
-
-// ڈیفالٹ رومز لوڈ کریں
 function loadRoomTabs() {
     const roomNames = {
         'room1': 'General Chat',
@@ -316,7 +314,6 @@ function loadRoomTabs() {
 }
 loadRoomTabs();
 
-// روم ٹیب پر کلک کریں
 roomTabs.forEach(tab => {
     tab.addEventListener('click', function() {
         const roomId = this.dataset.roomId;
@@ -324,7 +321,6 @@ roomTabs.forEach(tab => {
     });
 });
 
-// روم جوائن کریں
 function joinRoom(roomId) {
     const roomNames = {
         'room1': 'General Chat',
@@ -337,7 +333,6 @@ function joinRoom(roomId) {
     currentRoomName.textContent = `# ${roomName}`;
     leaveRoomBtn.style.display = 'inline-block';
     
-    // ٹیبز کو اپ ڈیٹ کریں
     roomTabs.forEach(tab => {
         tab.classList.remove('active');
         if (tab.dataset.roomId === roomId) {
@@ -345,7 +340,6 @@ function joinRoom(roomId) {
         }
     });
     
-    // چیٹ میسیجز کو صاف کریں
     chatMessages.innerHTML = '';
     const welcomeMsg = document.createElement('div');
     welcomeMsg.className = 'message-bubble received';
@@ -358,7 +352,6 @@ function joinRoom(roomId) {
     setTimeout(scrollToBottom, 100);
 }
 
-// روم چھوڑیں
 function leaveRoom() {
     if (confirm('Are you sure you want to leave this room?')) {
         currentRoomId = 'room1';
@@ -379,23 +372,42 @@ function leaveRoom() {
 leaveRoomBtn.addEventListener('click', leaveRoom);
 
 // ============================================
-// MENU BAR LOGIC (کنٹرولز صرف ایڈمن کے لیے)
+// FINAL UI FIX: MENU BAR LOGIC
 // ============================================
+
+// تمام ڈراپ ڈاؤنز کو بند کرنے والا ہیلپر فنکشن
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
+}
 
 // مینیو ٹیبز پر کلک کرنے کا ایونٹ
 menuTabs.forEach(tab => {
     tab.addEventListener('click', function(e) {
-        // پہلے تمام ڈراپ ڈاؤنز کو بند کریں
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.style.display = 'none';
-        });
-
-        // اب موجودہ ٹیب کا ڈراپ ڈاؤن کھولیں
+        e.stopPropagation(); // باہر کلک کرنے کے ایونٹ کو روکیں
+        
         const dropdown = this.querySelector('.dropdown-menu');
-        if (dropdown) {
-            dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+        if (!dropdown) return;
+
+        // اگر ڈراپ ڈاؤن پہلے سے کھلا ہے، تو اسے بند کریں
+        if (dropdown.style.display === 'flex') {
+            dropdown.style.display = 'none';
+            return;
         }
+
+        // ورنہ، پہلے سب بند کریں، پھر موجودہ کو کھولیں
+        closeAllDropdowns();
+        dropdown.style.display = 'flex';
     });
+});
+
+// کہیں بھی باہر کلک کرنے پر ڈراپ ڈاؤن بند کرنے کے لیے
+document.addEventListener('click', function(e) {
+    // اگر کلک مینیو بار کے اندر نہیں ہوا، تو سب بند کریں
+    if (!mainMenuBar.contains(e.target)) {
+        closeAllDropdowns();
+    }
 });
 
 // ڈراپ ڈاؤن آئٹمز پر کلک کرنے کا ایونٹ
@@ -432,7 +444,6 @@ function createNewRoom() {
     }
     const roomName = prompt('Enter room name:');
     if (roomName) {
-        // اس ڈیمو میں ہم نیا ٹیب بنائیں گے
         const newId = 'room' + (roomTabs.length + 1);
         const newTab = document.createElement('button');
         newTab.className = 'room-tab';
@@ -440,12 +451,10 @@ function createNewRoom() {
         newTab.textContent = roomName;
         document.querySelector('.room-tabs-scroll').appendChild(newTab);
         
-        // نیا ٹیب کلک ایونٹ
         newTab.addEventListener('click', function() {
             joinRoom(this.dataset.roomId);
         });
         
-        // روم جوائن کریں
         joinRoom(newId);
         alert(`Room "${roomName}" created successfully!`);
     }
@@ -491,4 +500,4 @@ function openSettings() {
 }
 
 console.log("✅ App.js loaded successfully!");
-console.log("🔥 Phase 2 Complete! Room Tabs Implemented!");
+console.log("🔥 Phase 2 Complete! All Dropdowns Fixed!");
