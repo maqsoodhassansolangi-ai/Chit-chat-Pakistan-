@@ -383,16 +383,34 @@ function joinRoom(roomId) {
     setTimeout(scrollToBottom, 100);
 }
 
+// ============================================
+// CORRECTED: attachMessagesListener (لائن 386 سے بدلیں)
+// ============================================
 function attachMessagesListener(roomId) {
+    // اگر پہلے سے کوئی لِسٹنر ہے تو اسے ہٹائیں
     if (messagesListener) {
         messagesListener();
         messagesListener = null;
     }
+
+    // اگر roomId نہیں ہے تو واپس آ جائیں
+    if (!roomId) {
+        console.warn('attachMessagesListener: roomId is missing');
+        return;
+    }
+
+    // صرف اس مخصوص روم کے میسجز کو سنیں، ترتیب وقت کے حساب سے، صرف آخری 50
     messagesRef = database.ref('messages/' + roomId);
-    messagesListener = messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
+    messagesListener = messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', function(snapshot) {
+        // 🛡️ چیک کریں کہ ڈیٹا موجود ہے
+        if (!snapshot || !snapshot.exists()) {
+            console.warn('No data for room:', roomId);
+            return;
+        }
+
         const msg = snapshot.val();
         if (msg) {
-            msg.key = snapshot.key;
+            msg.key = snapshot.key; // ✅ key پراپرٹی ہے، فنکشن نہیں
             displayMessage(msg);
         }
         scrollToBottom();
@@ -400,12 +418,14 @@ function attachMessagesListener(roomId) {
 }
 
 // ============================================
-// MESSAGES DISPLAY (with Avatar Fallback & Mentions)
+// CORRECTED: getAvatarHTML (لائن 400 سے بدلیں)
 // ============================================
 function getAvatarHTML(name, size = 32) {
     if (!name) name = '?';
+    // نام کا پہلا حرف (بڑے میں)
     const firstLetter = name.charAt(0).toUpperCase();
-    return `<div style="display:inline-block; width:${size}px; height:${size}px; border-radius:50%; background:#075E54; color:#fff; text-align:center; line-height:${size}px; font-weight:bold; font-size:${size/1.6}px; flex-shrink:0;">${firstLetter}</div>`;
+    // ایک خوبصورت دائرہ (circle) بنائیں جس میں حرف ہو
+    return `<div style="display:inline-block; width:${size}px; height:${size}px; border-radius:50%; background-color:#075E54; color:#ffffff; text-align:center; line-height:${size}px; font-weight:bold; font-size:${size/1.6}px; flex-shrink:0;">${firstLetter}</div>`;
 }
 
 function highlightMentions(text, currentUserName) {
