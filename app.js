@@ -1385,3 +1385,305 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
 // ============================================
 // ADMIN BUTTONS (Export, Save, Delete All)
 // ============================================
+adminExportUsersBtn.addEventListener('click', function() {
+    let csv = 'UID,Name,Email,Motto,Admin,Banned\n';
+    allUsersCache.forEach(([uid, data]) => {
+        const name = data.profile?.displayName || '';
+        const email = data.email || '';
+        const motto = data.profile?.motto || '';
+        const admin = data.isAdmin ? 'Yes' : 'No';
+        const banned = data.isBanned ? 'Yes' : 'No';
+        csv += `${uid},"${name}","${email}","${motto}","${admin}","${banned}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'users.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+saveSettingsBtn.addEventListener('click', function() {
+    const settings = {
+        siteName: adminSiteName.value.trim() || 'ChitChat Pakistan',
+        allowGuest: adminAllowGuest.checked,
+        maintenanceMode: adminMaintenanceMode.checked,
+        maxMessageLength: parseInt(adminMaxMessageLength.value) || 500,
+        announcement: adminAnnouncement.value.trim() || ''
+    };
+    settingsRef.update(settings).then(() => {
+        alert('Settings saved!');
+        loadSettings();
+        loadAnnouncement();
+    }).catch(err => alert('Error: ' + err.message));
+});
+
+adminDeleteAllMessagesBtn.addEventListener('click', function() {
+    adminClearAllMessages();
+});
+
+adminToggleReadOnlyBtn.addEventListener('click', adminToggleReadOnly);
+adminExportAllDataBtn.addEventListener('click', adminExportAllData);
+adminClearAllMessagesBtn.addEventListener('click', adminClearAllMessages);
+
+adminBanUserBtn.addEventListener('click', function() {
+    const uid = document.getElementById('adminBanUserInput').value.trim();
+    const reason = document.getElementById('adminBanReason').value.trim();
+    if (!uid) return alert('Enter User ID or email.');
+    adminBanUser(uid, reason, 0);
+});
+
+// ============================================
+// PRIVATE CHAT
+// ============================================
+function openPrivateChat(uid, name) {
+    privateChatWith = uid;
+    privateChatTitle.textContent = 'Private Chat with ' + name;
+    privateChatModal.style.display = 'flex';
+    const chatId = [currentUser.uid, uid].sort().join('_');
+    privateChatRef = database.ref('private_messages/' + chatId);
+    if (privateChatListener) privateChatListener();
+    privateChatListener = privateChatRef.orderByChild('timestamp').on('child_added', snapshot => {
+        const msg = snapshot.val();
+        if (msg) {
+            displayPrivateMessage(msg);
+        }
+    });
+}
+
+function displayPrivateMessage(msg) {
+    const container = document.getElementById('privateChatMessages');
+    const div = document.createElement('div');
+    const isMine = currentUser && msg.uid === currentUser.uid;
+    div.className = 'private-msg ' + (isMine ? 'sent' : 'received');
+    div.innerHTML = `
+        <span>${msg.name}: ${msg.text}</span>
+        <span style="font-size:10px;color:#888;display:block;">${new Date(msg.timestamp).toLocaleTimeString()}</span>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+sendPrivateMessageBtn.addEventListener('click', function() {
+    if (!privateChatWith) return;
+    const input = document.getElementById('privateMessageInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const chatId = [currentUser.uid, privateChatWith].sort().join('_');
+    database.ref('private_messages/' + chatId).push({
+        uid: currentUser.uid,
+        name: currentUser.displayName || currentUser.email || 'Guest',
+        text: filterBadWords(text),
+        timestamp: Date.now(),
+        read: false
+    }).then(() => {
+        input.value = '';
+        privateChatMessages.scrollTop = privateChatMessages.scrollHeight;
+    }).catch(err => alert('Error: ' + err.message));
+});
+
+function closePrivateChat() {
+    if (privateChatListener) {
+        privateChatListener();
+        privateChatListener = null;
+    }
+    privateChatRef = null;
+    privateChatWith = null;
+    privateChatModal.style.display = 'none';
+    privateChatMessages.innerHTML = '';
+    privateMessageInput.value = '';
+}
+
+// ============================================
+// ALL USERS LIST
+// ============================================
+function loadAllUsers() {
+    database.ref('users').once('value', snap => {
+        const users = snap.val();
+        const list = document.getElementById('allUsersList');
+        list.innerHTML = '';
+        if (!users) return;
+        const sorted = Object.entries(users).sort((a,b) => (a[1].profile?.displayName || a[0]) > (b[1].profile?.displayName || b[0]) ? 1 : -1);
+        sorted.forEach(([uid, data]) => {
+            const div = document.createElement('div');
+            div.className = 'user-item';
+            const name = data.profile?.displayName || data.email || uid;
+            const statusRef = database.ref('status/' + uid + '/state');
+            statusRef.once('value', snap => {
+                const status = snap.val();
+                const dot = status === 'online' ? 'online' : 'offline';
+                div.innerHTML = `
+                    <span><span class="status-dot ${dot}"></span>${name}</span>
+                    <div>
+                        <button onclick="openPrivateChat('${uid}', '${name}')" class="admin-btn">💬 PM</button>
+                    </div>
+                `;
+            });
+            list.appendChild(div);
+        });
+    });
+}
+
+// ============================================
+// LEAVE ROOM
+// ============================================
+leaveRoomBtn.addEventListener('click', function() {
+    if (currentRoomId !== 'room1') {
+        joinRoom('room1');
+    } else {
+        alert('You cannot leave the default room.');
+    }
+});
+
+// ============================================
+// MENU DROPDOWNS
+// ============================================
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
+}
+
+document.querySelectorAll('.menu-tab').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = this.querySelector('.dropdown-menu');
+        if (!dropdown) return;
+        if (dropdown.style.display === 'flex') {
+            dropdown.style.display = 'none';
+            return;
+        }
+        closeAllDropdowns();
+        dropdown.style.display = 'flex';
+    });
+});
+
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('mainMenuBar').contains(e.target)) {
+        closeAllDropdowns();
+    }
+});
+
+document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const action = this.dataset.action;
+        switch(action) {
+            case 'create-room': if(isAdmin) createRoom(); break;
+            case 'delete-room': if(isAdmin) deleteRoom(); break;
+            case 'rename-room': if(isAdmin) renameRoom(); break;
+            case 'room-settings': if(isAdmin) roomSettings(); break;
+            case 'view-profile': openProfile(); break;
+            case 'change-password': openPassword(); break;
+            case 'admin-panel': openAdmin(); break;
+            case 'logout': auth.signOut(); break;
+            case 'open-stickers': openStickers(); break;
+            case 'view-users': openUsers(); break;
+            case 'site-settings': openSiteSettings(); break;
+        }
+        closeAllDropdowns();
+    });
+});
+
+// ===== ADMIN ROOM FUNCTIONS =====
+function createRoom() {
+    if (!isAdmin) return alert('Admin only!');
+    const name = prompt('Enter new room name:');
+    if (!name) return;
+    const newId = 'room' + Date.now();
+    roomsRef.child(newId).set({
+        name: name,
+        description: '',
+        createdBy: currentUser.uid,
+        createdAt: Date.now(),
+        order: Date.now(),
+        isPrivate: false,
+        hidden: false,
+        password: null
+    }).then(() => {
+        alert('Room created!');
+        joinRoom(newId);
+    }).catch(err => alert('Error: ' + err.message));
+}
+
+function deleteRoom() {
+    if (!isAdmin) return alert('Admin only!');
+    if (currentRoomId === 'room1') return alert('Cannot delete default room.');
+    if (!confirm('Delete this room and all its messages?')) return;
+    adminDeleteRoom(currentRoomId);
+}
+
+function renameRoom() {
+    if (!isAdmin) return alert('Admin only!');
+    const newName = prompt('Enter new name for this room:');
+    if (!newName) return;
+    roomsRef.child(currentRoomId).child('name').set(newName).then(() => {
+        alert('Room renamed.');
+        currentRoomName.textContent = `# ${newName}`;
+        const tabs = document.querySelectorAll('.room-tab');
+        tabs.forEach(tab => {
+            if (tab.dataset.roomId === currentRoomId) {
+                tab.textContent = newName;
+            }
+        });
+    });
+}
+
+function roomSettings() {
+    if (!isAdmin) return alert('Admin only!');
+    const room = currentRoomId;
+    const isPrivate = confirm('Make this room password protected?');
+    if (isPrivate) {
+        const password = prompt('Enter password for this room:');
+        if (password) {
+            roomsRef.child(room).update({ isPrivate: true, password: password });
+            alert('Room is now password protected.');
+        }
+    } else {
+        roomsRef.child(room).update({ isPrivate: false, password: null });
+        alert('Room is now public.');
+    }
+}
+
+// ===== OPEN MODALS =====
+function openProfile() { loadProfile(); profileModal.style.display = 'flex'; }
+function openPassword() { passwordModal.style.display = 'flex'; }
+function openAdmin() { if (!isAdmin) return alert('Admin only!'); loadAdminPanel(); adminModal.style.display = 'flex'; }
+function openStickers() { stickerModal.style.display = 'flex'; }
+function openUsers() { loadAllUsers(); usersModal.style.display = 'flex'; }
+function openSiteSettings() { if (!isAdmin) return alert('Admin only!'); openAdmin(); document.querySelector('.admin-tab[data-tab="settings"]').click(); }
+
+// ===== CLOSE MODALS =====
+document.querySelectorAll('.close-modal').forEach(el => {
+    el.addEventListener('click', function() {
+        this.closest('.modal').style.display = 'none';
+        if (this.closest('#privateChatModal')) closePrivateChat();
+    });
+});
+window.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+        if (e.target.id === 'privateChatModal') closePrivateChat();
+    }
+});
+
+// ============================================
+// PRIVATE CHAT BUTTON (PLACEHOLDER - TO BE USED WITH USER SELECT)
+// ============================================
+privateChatBtn.addEventListener('click', function() {
+    const uid = prompt('Enter User ID to chat with:');
+    if (uid) {
+        database.ref('users/' + uid + '/profile/displayName').once('value', snap => {
+            const name = snap.val() || uid;
+            openPrivateChat(uid, name);
+        });
+    }
+});
+
+// ============================================
+// INITIALIZATION
+// ============================================
+console.log("✅ ChitChat Pakistan v3.0 (Extended) loaded successfully!");
+console.log("🔥 Admin Email: maqsoodhassansolangi90@gmail.com");
+console.log("💬 All features are ready!");
