@@ -1,0 +1,83 @@
+/* ============================================
+   feature-admin-restructure.css
+   Grouped/collapsible admin navigation, replacing the old flat
+   .admin-tabs row visually (the row itself stays in the DOM, just
+   hidden — its buttons are still what actually get clicked).
+   ============================================ */
+
+.admin-tabs-legacy-hidden { display: none !important; }
+
+.admin-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+}
+
+.admin-sidebar-group {
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.admin-sidebar-group-header {
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    background: #f7f7f7;
+    color: #075E54;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.admin-sidebar-group-header::after {
+    content: '▾';
+    transition: transform 0.15s ease;
+    font-size: 12px;
+    opacity: 0.6;
+}
+.admin-sidebar-group.open .admin-sidebar-group-header::after {
+    transform: rotate(180deg);
+}
+
+.admin-sidebar-group-items {
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px;
+}
+.admin-sidebar-group.open .admin-sidebar-group-items {
+    display: flex;
+}
+
+.admin-sidebar-item {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    color: #333;
+}
+.admin-sidebar-item:hover { background: #f0f0f0; }
+.admin-sidebar-item.active {
+    background: #075E54;
+    color: #fff;
+    border-color: #075E54;
+}
+
+/* Dark mode */
+body.dark-mode .admin-sidebar { border-bottom-color: #3b4a54; }
+body.dark-mode .admin-sidebar-group { border-color: #3b4a54; }
+body.dark-mode .admin-sidebar-group-header { background: #202C33; color: #25D366; }
+body.dark-mode .admin-sidebar-item { background: #2A3942; color: #e9edef; border-color: #3b4a54; }
+body.dark-mode .admin-sidebar-item.active { background: #25D366; color: #111; border-color: #25D366; }
+
+/* Wider screens: lay groups out side-by-side instead of stacked accordion */
+@media (min-width: 700px) {
+    .admin-sidebar { flex-direction: row; flex-wrap: wrap; }
+    .admin-sidebar-group { flex: 1 1 200px; }
+}
