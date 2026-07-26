@@ -1,0 +1,67 @@
+/* ============================================
+   feature-auth-extended.css
+   Styling for: extended signup fields, Guest Setup
+   Modal, Google Complete-Profile Modal.
+   Scoped so it never touches existing selectors.
+   ============================================ */
+
+/* Match the existing .auth-form input look for our new <select>/<input> */
+.auth-form select,
+#guestSetupModal input,
+#guestSetupModal select,
+#googleCompleteModal input,
+#googleCompleteModal select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    background: #fff;
+    margin-bottom: 10px;
+}
+.auth-form select:focus,
+#guestSetupModal input:focus,
+#guestSetupModal select:focus,
+#googleCompleteModal input:focus,
+#googleCompleteModal select:focus {
+    border-color: #075E54;
+}
+
+#signupInterestsWrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 13px;
+}
+#signupInterestsWrap label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: normal;
+}
+
+/* Guest avatar color swatches */
+.guest-avatar-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    display: inline-block;
+}
+.guest-avatar-swatch.selected {
+    border-color: #075E54;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #075E54;
+}
+
+/* Dark mode */
+body.dark-mode .auth-form select,
+body.dark-mode #guestSetupModal input,
+body.dark-mode #guestSetupModal select,
+body.dark-mode #googleCompleteModal input,
+body.dark-mode #googleCompleteModal select {
+    background: #2A3942;
+    color: #e9edef;
+    border-color: #3b4a54;
+}
