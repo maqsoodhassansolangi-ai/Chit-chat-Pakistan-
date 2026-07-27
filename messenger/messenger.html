@@ -1,0 +1,53 @@
+<!-- ============================================
+     ChitChat Pakistan — Messenger (V1: Base Messenger)
+     Injected into <body> at runtime by messenger-v1.js.
+     Do not add markup for V2-V5 here yet — each version's
+     HTML is added by that version's own JS file when it ships,
+     keeping every shipped version fully self-contained and testable.
+     ============================================ -->
+<div id="messengerContainer" class="messenger-hidden">
+
+    <!-- ===== INBOX SCREEN ===== -->
+    <div id="messengerInboxScreen" class="messenger-screen active">
+        <div class="messenger-header">
+            <button id="messengerCloseBtn" class="messenger-icon-btn" title="Back to Chat">←</button>
+            <span class="messenger-title">💬 Messenger</span>
+            <button id="messengerNewChatBtn" class="messenger-icon-btn" title="New Chat">➕</button>
+        </div>
+        <div id="messengerInboxList" class="messenger-inbox-list"></div>
+        <div id="messengerInboxEmpty" class="messenger-empty-state" style="display:none;">
+            <p>کوئی بات چیت موجود نہیں</p>
+            <span>➕ پر ٹیپ کر کے نئی چیٹ شروع کریں</span>
+        </div>
+    </div>
+
+    <!-- ===== CHAT SCREEN ===== -->
+    <div id="messengerChatScreen" class="messenger-screen">
+        <div class="messenger-header">
+            <button id="messengerChatBackBtn" class="messenger-icon-btn" title="Back to Inbox">←</button>
+            <img id="messengerChatAvatar" class="messenger-chat-avatar" src="default-avatar.png" alt="">
+            <div class="messenger-chat-title">
+                <span id="messengerChatName">User</span>
+                <span id="messengerChatStatusLine" class="messenger-status-line"></span>
+            </div>
+        </div>
+        <div id="messengerChatMessages" class="messenger-chat-messages"></div>
+        <div class="messenger-chat-inputbar">
+            <input type="text" id="messengerMsgInput" placeholder="Message" autocomplete="off" maxlength="2000">
+            <button id="messengerSendBtn" class="messenger-send-btn" title="Send">➤</button>
+        </div>
+    </div>
+
+    <!-- ===== NEW CHAT PICKER ===== -->
+    <div id="messengerNewChatModal" class="messenger-modal-overlay">
+        <div class="messenger-modal">
+            <div class="messenger-modal-header">
+                <span>نئی چیٹ شروع کریں</span>
+                <button id="messengerNewChatCloseBtn" class="messenger-icon-btn">✕</button>
+            </div>
+            <input type="text" id="messengerUserSearch" class="messenger-search-input" placeholder="Search users...">
+            <div id="messengerUserPickList" class="messenger-user-pick-list"></div>
+        </div>
+    </div>
+
+</div>
