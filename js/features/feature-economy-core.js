@@ -79,6 +79,15 @@ function watchCoinBalance(uid) {
     });
 }
 
+function stopWatchingCoinBalance(uid) {
+    if (uid) database.ref('users/' + uid + '/economy').off();
+}
+
+function removeCoinBadge() {
+    const badge = document.getElementById('coinBadge');
+    if (badge) badge.remove();
+}
+
 // ===== 3. Watch-Ad-For-Coins flow =====
 // NOTE (documented honestly): Adsterra doesn't give us a client-side
 // "ad finished watching, here's a verified callback" signal the way a
@@ -88,6 +97,7 @@ function watchCoinBalance(uid) {
 // should) be swapped for a real rewarded-ad SDK's completion callback
 // later if ad fraud/abuse becomes a real problem.
 function showWatchAdModal() {
+    if (!auth.currentUser) return; // guard: badge/click can't fire this while logged out
     if (document.getElementById('watchAdModal')) return;
     const modal = document.createElement('div');
     modal.id = 'watchAdModal';
@@ -196,11 +206,20 @@ function enforceNewChatLimit(uid, targetUid, targetName, proceedFn) {
     });
 }
 
-// ===== 5. Wire it all up on login =====
+// ===== 5. Wire it all up on login/logout =====
+let lastEconomyUid = null;
 auth.onAuthStateChanged(function(user) {
-    if (!user) return;
+    if (!user) {
+        stopWatchingCoinBalance(lastEconomyUid);
+        lastEconomyUid = null;
+        removeCoinBadge();
+        const openModal = document.getElementById('watchAdModal');
+        if (openModal) openModal.remove();
+        return;
+    }
+    lastEconomyUid = user.uid;
     ensureEconomyInitialized(user.uid);
     injectCoinBadge();
     watchCoinBalance(user.uid);
 });
-installPrivateChatGate();
+installPrivateChatGate();installPrivateChatGate();
