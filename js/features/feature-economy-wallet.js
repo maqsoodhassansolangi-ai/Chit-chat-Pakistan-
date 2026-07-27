@@ -9,7 +9,8 @@
 //    gifting, or Ad/Chat Coins — a male can buy these directly
 //    instead of watching ads, per the user's explicit request),
 //    pick a package, pick a payment method, submit -> creates a
-//    request ticket AND opens a prefilled WhatsApp link to the owner.
+//    request ticket, which is auto-posted into the in-site Help &
+//    Support inbox (see feature-support-inbox.js) — no WhatsApp.
 //  - New Admin "Requests" tab (auto-added to the Economy sidebar
 //    group): lists tickets, lets Owner/Admin credit coins + mark
 //    approved/rejected, plus a free-standing "Send Coins" tool for
@@ -58,7 +59,7 @@ function injectBuyCoinsModal() {
                 ${PAYMENT_METHODS.map(m => `<option value="${m}">${m}</option>`).join('')}
             </select>
 
-            <button id="buyCoinsSubmitBtn" class="auth-btn primary" style="margin-top:12px;">Continue on WhatsApp</button>
+            <button id="buyCoinsSubmitBtn" class="auth-btn primary" style="margin-top:12px;">Submit Request</button>
             <button id="buyCoinsCloseBtn" class="auth-btn" style="background:#ccc;margin-top:6px;">Cancel</button>
         </div>
     `;
