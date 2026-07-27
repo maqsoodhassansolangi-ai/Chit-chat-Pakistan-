@@ -54,7 +54,6 @@ const onlineCount = document.getElementById('onlineCount');
 const roomTabsList = document.getElementById('roomTabsList');
 const currentRoomName = document.getElementById('currentRoomName');
 const leaveRoomBtn = document.getElementById('leaveRoomBtn');
-const privateChatBtn = document.getElementById('privateChatBtn');
 const themeToggle = document.getElementById('themeToggle');
 const emojiBtn = document.getElementById('emojiBtn');
 const attachBtn = document.getElementById('attachBtn');
@@ -2197,95 +2196,6 @@ adminBanUserBtn.addEventListener('click', function() {
     }
 });
 
-// ============================================
-// PRIVATE CHAT
-// ============================================
-function openPrivateChat(uid, name) {
-    privateChatWith = uid;
-    privateChatTitle.textContent = 'Private Chat with ' + name;
-    privateChatModal.style.display = 'flex';
-    const chatId = [currentUser.uid, uid].sort().join('_');
-    privateChatRef = database.ref('private_messages/' + chatId);
-
-    if (privateChatQuery) {
-        if (privateChatAddedCallback) privateChatQuery.off('child_added', privateChatAddedCallback);
-        if (privateChatChangedCallback) privateChatQuery.off('child_changed', privateChatChangedCallback);
-    }
-    privateChatQuery = privateChatRef.orderByChild('timestamp');
-
-    privateChatAddedCallback = privateChatQuery.on('child_added', snapshot => {
-        const msg = snapshot.val();
-        if (msg) {
-            msg.key = snapshot.key;
-            displayPrivateMessage(msg);
-            // If this message was sent TO me and I have it open, mark it read.
-            if (msg.uid !== currentUser.uid && !msg.read) {
-                database.ref('private_messages/' + chatId + '/' + snapshot.key + '/read').set(true);
-            }
-        }
-    });
-
-    // Live-update ✓✓ read ticks on my own sent messages once the other
-    // person reads them (previously the "read" field was written but
-    // never actually used anywhere).
-    privateChatChangedCallback = privateChatQuery.on('child_changed', snapshot => {
-        const msg = snapshot.val();
-        if (!msg) return;
-        const tick = privateChatMessages.querySelector(`[data-id="${snapshot.key}"] .read-tick`);
-        if (tick) {
-            tick.textContent = msg.read ? '✓✓' : '✓';
-            tick.classList.toggle('seen', !!msg.read);
-        }
-    });
-}
-
-function displayPrivateMessage(msg) {
-    const container = document.getElementById('privateChatMessages');
-    const div = document.createElement('div');
-    const isMine = currentUser && msg.uid === currentUser.uid;
-    div.className = 'private-msg ' + (isMine ? 'sent' : 'received');
-    if (msg.key) div.dataset.id = msg.key;
-    const tickHTML = isMine ? `<span class="read-tick ${msg.read ? 'seen' : ''}">${msg.read ? '✓✓' : '✓'}</span>` : '';
-    div.innerHTML = `
-        <span>${escapeHtml(msg.name)}: ${escapeHtml(msg.text)}</span>
-        <span style="font-size:10px;color:#888;display:block;">${new Date(msg.timestamp).toLocaleTimeString()} ${tickHTML}</span>
-    `;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-}
-
-sendPrivateMessageBtn.addEventListener('click', function() {
-    if (!privateChatWith) return;
-    const input = document.getElementById('privateMessageInput');
-    const text = input.value.trim();
-    if (!text) return;
-    const chatId = [currentUser.uid, privateChatWith].sort().join('_');
-    database.ref('private_messages/' + chatId).push({
-        uid: currentUser.uid,
-        name: currentUser.displayName || currentUser.email || 'Guest',
-        text: filterBadWords(text),
-        timestamp: Date.now(),
-        read: false
-    }).then(() => {
-        input.value = '';
-        privateChatMessages.scrollTop = privateChatMessages.scrollHeight;
-    }).catch(err => alert('Error: ' + err.message));
-});
-
-function closePrivateChat() {
-    if (privateChatQuery) {
-        if (privateChatAddedCallback) privateChatQuery.off('child_added', privateChatAddedCallback);
-        if (privateChatChangedCallback) privateChatQuery.off('child_changed', privateChatChangedCallback);
-        privateChatQuery = null;
-        privateChatAddedCallback = null;
-        privateChatChangedCallback = null;
-    }
-    privateChatRef = null;
-    privateChatWith = null;
-    privateChatModal.style.display = 'none';
-    privateChatMessages.innerHTML = '';
-    privateMessageInput.value = '';
-}
 
 // ============================================
 // ALL USERS LIST
@@ -2494,14 +2404,6 @@ window.addEventListener('click', function(e) {
     }
 });
 
-// ============================================
-// PRIVATE CHAT BUTTON — opens the Users list so people can pick who
-// to message, instead of asking them to type a raw Firebase UID
-// (which no real user would ever know).
-// ============================================
-privateChatBtn.addEventListener('click', function() {
-    openUsers();
-});
 
 // ============================================
 // INITIALIZATION
