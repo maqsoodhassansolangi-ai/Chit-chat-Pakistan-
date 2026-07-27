@@ -20,8 +20,10 @@
 // ============================================
 
 const TAB_GROUPS = [
+    { key: 'support', label: '🛟 Support', tabs: ['support'] },
     { key: 'people', label: '👥 People', tabs: ['users', 'bans'] },
     { key: 'content', label: '💬 Content', tabs: ['messages', 'rooms', 'badwords', 'stickers'] },
+    { key: 'economy', label: '🪙 Economy', tabs: ['requests'] },
     { key: 'marketing', label: '📢 Marketing', tabs: ['ads'] },
     { key: 'system', label: '⚙️ System', tabs: ['settings', 'logs'] }
 ];
