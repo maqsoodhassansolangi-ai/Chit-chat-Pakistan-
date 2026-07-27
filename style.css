@@ -252,11 +252,6 @@ body.dark-mode .legal-panel p { color: #d1d7db; }
 .user-item .status-dot.online { background: #2ecc71; }
 .user-item .status-dot.offline { background: #95a5a6; }
 
-/* Private Chat Modal */
-#privateChatMessages { max-height: 300px; overflow-y: auto; padding: 10px; background: #f9f9f9; border-radius: 8px; }
-.private-msg { padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; }
-.private-msg.sent { background: #DCF8C6; text-align: right; }
-.private-msg.received { background: #fff; text-align: left; }
 
 /* Dark Mode */
 body.dark-mode { background: #111B21; }
@@ -289,8 +284,6 @@ body.dark-mode .admin-tab { color: #8696a0; }
 body.dark-mode .admin-tab.active { background: #25D366; color: #111B21; }
 body.dark-mode .settings-group input[type="text"], body.dark-mode .settings-group input[type="number"] { background: #2a3942; color: #e9edef; border-color: #2a3942; }
 body.dark-mode .user-item { background: #2a3942; }
-body.dark-mode .private-msg.sent { background: #005C4B; color: #e9edef; }
-body.dark-mode .private-msg.received { background: #202C33; color: #e9edef; }
 body.dark-mode #announcementBanner { background: #e67e22; color: #fff; }
 
 /* Responsive */
