@@ -1,0 +1,46 @@
+/* ============================================
+   feature-support-inbox.css
+   ============================================ */
+
+.support-fab {
+    position: fixed;
+    bottom: 90px;
+    right: 16px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #075E54;
+    color: #fff;
+    border: none;
+    font-size: 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 1500;
+}
+.support-fab:hover { background: #0a7a6b; }
+
+.support-msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; }
+.support-msg-mine { align-self: flex-end; background: #dcf8c6; }
+.support-msg-support { align-self: flex-start; background: #f0f0f0; }
+body.dark-mode .support-msg-mine { background: #005c4b; color: #fff; }
+body.dark-mode .support-msg-support { background: #2A3942; color: #e9edef; }
+
+.support-thread-item { padding: 8px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 4px; }
+.support-thread-item:hover { background: #f5f5f5; }
+.support-thread-item.unread { background: #fff3f3; font-weight: 600; }
+
+.support-badge { background: #e53935; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+.support-badge-dot {
+    display: inline-block;
+    background: #e53935;
+    color: #fff;
+    font-size: 10px;
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 8px;
+    margin-left: 6px;
+    padding: 0 3px;
+}
