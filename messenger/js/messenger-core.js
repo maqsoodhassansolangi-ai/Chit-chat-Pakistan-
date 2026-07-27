@@ -1,7 +1,11 @@
-// messenger/js/messenger-core.js
+// ============================================
+// messenger/js/messenger-core.js — V1 (Base Messenger)
+// ============================================
+
 (function() {
     'use strict';
 
+    // DOM refs
     const messengerPage = document.getElementById('messengerPage');
     const messengerBackBtn = document.getElementById('messengerBackBtn');
     const messengerChatList = document.getElementById('messengerChatList');
@@ -12,16 +16,46 @@
     const messengerMsgInput = document.getElementById('messengerMsgInput');
     const messengerSendBtn = document.getElementById('messengerSendBtn');
 
+    // State
     let currentMessengerChat = null;
     let messengerChats = {};
     let messengerMessagesRef = null;
     let messengerMsgListener = null;
 
+    // ===== HELPER: escapeHtml =====
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // ===== OPEN / CLOSE MESSENGER =====
     window.openMessenger = function() {
+        // اگر HTML موجود نہیں ہے تو اسے fetch کریں
+        const existing = document.getElementById('messengerPage');
+        if (!existing) {
+            fetch('messenger/messenger.html')
+                .then(res => res.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    // دوبارہ کال کریں
+                    openMessenger();
+                })
+                .catch(err => alert('Messenger page failed to load: ' + err.message));
+            return;
+        }
+
+        // اب صفحہ موجود ہے — اسے کھولیں
         messengerPage.style.display = 'flex';
         messengerPage.style.position = 'fixed';
         messengerPage.style.top = '0';
         messengerPage.style.left = '0';
+        messengerPage.style.width = '100%';
+        messengerPage.style.height = '100%';
+        messengerPage.style.zIndex = '9999';
+        messengerPage.style.overflow = 'hidden';
+        messengerPage.style.flexDirection = 'column';
+
         loadMessengerChats();
         history.pushState({ page: 'messenger' }, '');
     };
@@ -37,6 +71,7 @@
         messengerChatArea.style.display = 'none';
     }
 
+    // Back button (←)
     messengerBackBtn.addEventListener('click', function() {
         if (currentMessengerChat) {
             closeChatView();
@@ -45,6 +80,7 @@
         }
     });
 
+    // Handle browser back (popstate)
     window.addEventListener('popstate', function(e) {
         if (e.state && e.state.page === 'messenger') {
             if (currentMessengerChat) {
@@ -57,6 +93,7 @@
         }
     });
 
+    // ===== LOAD CHATS =====
     function loadMessengerChats() {
         const user = firebase.auth().currentUser;
         if (!user) return;
@@ -100,6 +137,7 @@
         });
     }
 
+    // ===== OPEN / CLOSE CHAT VIEW =====
     function openChatView(chatId, chat) {
         currentMessengerChat = { uid: chatId, name: chat.name || 'Unknown' };
         messengerChatName.textContent = chat.name || 'Unknown';
@@ -151,6 +189,7 @@
         messengerMessages.scrollTop = messengerMessages.scrollHeight;
     }
 
+    // ===== SEND MESSAGE =====
     messengerSendBtn.addEventListener('click', sendMessengerMessage);
     messengerMsgInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); sendMessengerMessage(); }
@@ -190,29 +229,45 @@
         }).catch(err => alert('Error: ' + err.message));
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // ===== ADD MESSENGER TAB TO MENU (FIXED) =====
+    // یہ حصہ اب DOMContentLoaded کے بغیر براہ راست چلے گا
+    (function addMessengerTab() {
         const menuBar = document.getElementById('mainMenuBar');
-        if (menuBar) {
-            const messengerTab = document.createElement('div');
-            messengerTab.className = 'menu-tab';
-            messengerTab.textContent = 'Messenger';
-            messengerTab.style.cursor = 'pointer';
-            messengerTab.addEventListener('click', function(e) {
-                e.stopPropagation();
-                openMessenger();
-            });
-            const firstTab = menuBar.querySelector('.menu-tab');
-            if (firstTab) {
-                firstTab.parentNode.insertBefore(messengerTab, firstTab.nextSibling);
-            } else {
-                menuBar.querySelector('.menu-tabs').appendChild(messengerTab);
-            }
+        if (!menuBar) {
+            // اگر مینو بار ابھی نہیں ملا، تو 500ms بعد دوبارہ کوشش کریں
+            setTimeout(addMessengerTab, 500);
+            return;
         }
-        document.addEventListener('click', function(e) {
-            const pmBtn = e.target.closest('.pm-user-btn');
-            if (pmBtn) {
+
+        if (document.querySelector('.menu-tab[data-messenger]')) return;
+
+        const messengerTab = document.createElement('div');
+        messengerTab.className = 'menu-tab';
+        messengerTab.setAttribute('data-messenger', 'true');
+        messengerTab.textContent = 'Messenger';
+        messengerTab.style.cursor = 'pointer';
+        messengerTab.style.fontWeight = '500';
+
+        messengerTab.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (typeof openMessenger === 'function') {
                 openMessenger();
             }
         });
-    });
+
+        // "Rooms" کے بعد ڈالیں
+        const tabs = menuBar.querySelectorAll('.menu-tab');
+        let inserted = false;
+        for (let tab of tabs) {
+            if (tab.textContent.trim() === 'Rooms' || tab.textContent.trim() === 'Rooms ▼') {
+                tab.parentNode.insertBefore(messengerTab, tab.nextSibling);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted) {
+            menuBar.querySelector('.menu-tabs').appendChild(messengerTab);
+        }
+    })();
+
 })();
