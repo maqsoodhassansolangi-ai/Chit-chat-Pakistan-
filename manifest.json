@@ -1,0 +1,30 @@
+{
+  "id": "/Chit-chat-Pakistan-/",
+  "name": "ChitChat Pakistan",
+  "short_name": "ChitChat",
+  "description": "ChitChat Pakistan - Free Online Chat, Messenger & Calls",
+  "lang": "en-PK",
+  "start_url": "/Chit-chat-Pakistan-/",
+  "scope": "/Chit-chat-Pakistan-/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#075E54",
+  "theme_color": "#075E54",
+  "prefer_related_applications": false,
+  "categories": ["social", "communication"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Messenger",
+      "short_name": "Messenger",
+      "description": "Go directly to private messages",
+      "url": "/?open=messenger",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
