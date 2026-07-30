@@ -1,0 +1,188 @@
+<!-- ============================================
+     ChitChat Pakistan — Messenger (V1: Base Messenger)
+     Injected into <body> at runtime by messenger-v1.js.
+     Do not add markup for V2-V5 here yet — each version's
+     HTML is added by that version's own JS file when it ships,
+     keeping every shipped version fully self-contained and testable.
+     ============================================ -->
+<div id="messengerContainer" class="messenger-hidden">
+
+    <!-- ===== INBOX SCREEN ===== -->
+    <div id="messengerInboxScreen" class="messenger-screen active">
+        <div class="messenger-header">
+            <button id="messengerCloseBtn" class="messenger-icon-btn" title="Back to Chat">←</button>
+            <span class="messenger-title">💬 Messenger</span>
+            <button id="messengerStarredBtn" class="messenger-icon-btn" title="Starred Messages">⭐</button>
+            <button id="messengerNewChatBtn" class="messenger-icon-btn" title="New Chat">➕</button>
+        </div>
+        <div id="messengerInboxList" class="messenger-inbox-list"></div>
+        <div id="messengerInboxEmpty" class="messenger-empty-state" style="display:none;">
+            <p>کوئی بات چیت موجود نہیں</p>
+            <span>➕ پر ٹیپ کر کے نئی چیٹ شروع کریں</span>
+        </div>
+    </div>
+
+    <!-- ===== CHAT SCREEN ===== -->
+    <div id="messengerChatScreen" class="messenger-screen">
+        <div class="messenger-header">
+            <button id="messengerChatBackBtn" class="messenger-icon-btn" title="Back to Inbox">←</button>
+            <img id="messengerChatAvatar" class="messenger-chat-avatar" src="default-avatar.png" alt="">
+            <div class="messenger-chat-title">
+                <span id="messengerChatName">User</span>
+                <span id="messengerChatStatusLine" class="messenger-status-line"></span>
+            </div>
+            <button id="messengerChatSearchBtn" class="messenger-icon-btn" title="Search messages">🔍</button>
+            <button id="messengerAudioCallBtn" class="messenger-icon-btn" title="Audio call">📞</button>
+            <button id="messengerVideoCallBtn" class="messenger-icon-btn" title="Video call">📹</button>
+            <button id="messengerChatMenuBtn" class="messenger-icon-btn" title="More">⋮</button>
+        </div>
+        <!-- V3: replaces the header above while messages are selected -->
+        <div id="messengerSelectBar" class="messenger-select-bar" style="display:none;">
+            <button id="messengerSelectCancelBtn" class="messenger-icon-btn" title="Cancel">✕</button>
+            <span id="messengerSelectCount">1</span>
+            <div class="messenger-select-actions">
+                <span id="messengerSelectExtra" class="messenger-select-extra"></span>
+                <button id="messengerSelectDeleteBtn" class="messenger-icon-btn" title="Delete">🗑️</button>
+            </div>
+        </div>
+        <!-- V7: in-chat search bar, overlays the header the same way the select bar does -->
+        <div id="messengerChatSearchBar" class="messenger-chat-search-bar" style="display:none;">
+            <input type="text" id="messengerChatSearchInput" class="messenger-search-input" placeholder="Search messages...">
+            <button id="messengerChatSearchCloseBtn" class="messenger-icon-btn" title="Close">✕</button>
+        </div>
+        <div id="messengerChatMessages" class="messenger-chat-messages"></div>
+        <!-- V3-B: reply preview, shown above the input bar while replying -->
+        <div id="messengerReplyBar" class="messenger-reply-bar" style="display:none;">
+            <div class="messenger-reply-info">
+                <span id="messengerReplyName" class="messenger-reply-name"></span>
+                <span id="messengerReplyText" class="messenger-reply-text"></span>
+            </div>
+            <button id="messengerReplyCancelBtn" class="messenger-icon-btn" title="Cancel reply">✕</button>
+        </div>
+        <div id="messengerBlockedBanner" class="messenger-blocked-banner" style="display:none;">🚫 You have blocked this contact — unblock to send messages.</div>
+        <div id="messengerAttachMenuBackdrop" class="messenger-attach-menu-backdrop" style="display:none;"></div>
+        <div id="messengerAttachMenu" class="messenger-attach-menu" style="display:none;">
+            <button id="messengerAttachGalleryBtn" class="messenger-attach-option">
+                <span class="messenger-attach-icon" style="background:#bf59cf;">🖼️</span><span>Gallery</span>
+            </button>
+            <button id="messengerAttachCameraBtn" class="messenger-attach-option">
+                <span class="messenger-attach-icon" style="background:#e05f5f;">📷</span><span>Camera</span>
+            </button>
+            <button id="messengerAttachLocationBtn" class="messenger-attach-option">
+                <span class="messenger-attach-icon" style="background:#4285f4;">📍</span><span>Location</span>
+            </button>
+        </div>
+        <div class="messenger-chat-inputbar" id="messengerInputBar">
+            <button id="messengerAttachBtn" class="messenger-icon-btn" title="Attach">📎</button>
+            <input type="file" id="messengerAttachInput" accept="image/*,video/*" style="display:none;">
+            <input type="file" id="messengerCameraInput" accept="image/*" capture="environment" style="display:none;">
+            <input type="text" id="messengerMsgInput" placeholder="Message" autocomplete="off" maxlength="2000">
+            <button id="messengerVoiceSendBtn" class="messenger-send-btn" title="Send">
+                <span id="messengerVoiceSendIcon">🎤</span>
+            </button>
+        </div>
+        <!-- Recording bar: replaces the input row while press-and-hold recording is active -->
+        <div id="messengerRecordingBar" class="messenger-recording-bar" style="display:none;">
+            <button id="messengerRecordDeleteBtn" class="messenger-icon-btn messenger-record-delete" title="Delete">🗑️</button>
+            <span class="messenger-record-dot"></span>
+            <span id="messengerRecordingTimer" class="messenger-recording-timer">0:00</span>
+            <span id="messengerSlideCancelHint" class="messenger-slide-cancel-hint">‹ Slide to cancel</span>
+            <div id="messengerRecordLock" class="messenger-record-lock">🔒<span class="messenger-lock-arrow">⌃</span></div>
+        </div>
+        <!-- Locked recording bar: shown after sliding up to lock — mic can be released -->
+        <div id="messengerLockedRecordBar" class="messenger-locked-record-bar" style="display:none;">
+            <button id="messengerLockedDeleteBtn" class="messenger-icon-btn" title="Delete">🗑️</button>
+            <span class="messenger-record-dot"></span>
+            <span id="messengerLockedTimer" class="messenger-recording-timer">0:00</span>
+            <button id="messengerLockedSendBtn" class="messenger-send-btn" title="Send">➤</button>
+        </div>
+    </div>
+
+    <!-- V6: inbox row long-press menu (Pin/Mute/Clear/Delete chat) -->
+    <div id="messengerInboxActionMenu" class="messenger-action-menu" style="display:none;">
+        <div id="messengerInboxActionButtons" class="messenger-action-buttons"></div>
+    </div>
+
+    <!-- V4-A: chat header ⋮ menu (Block/Mute/Delete Chat) -->
+    <div id="messengerChatMenu" class="messenger-action-menu" style="display:none;">
+        <div id="messengerChatMenuButtons" class="messenger-action-buttons"></div>
+    </div>
+
+    <!-- V4-A: generic confirm modal (Block/Unblock, Delete Chat) -->
+    <div id="messengerConfirmModal" class="messenger-modal-overlay">
+        <div class="messenger-modal messenger-delete-modal">
+            <div id="messengerConfirmText" class="messenger-confirm-text"></div>
+            <button id="messengerConfirmOkBtn" class="messenger-delete-option messenger-delete-danger"></button>
+            <button id="messengerConfirmCancelBtn" class="messenger-delete-option messenger-delete-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- V4-A: mute duration picker -->
+    <div id="messengerMuteModal" class="messenger-modal-overlay">
+        <div class="messenger-modal messenger-delete-modal">
+            <button id="messengerMute8hBtn" class="messenger-delete-option">Mute for 8 hours</button>
+            <button id="messengerMute1wBtn" class="messenger-delete-option">Mute for 1 week</button>
+            <button id="messengerMuteAlwaysBtn" class="messenger-delete-option">Mute Always</button>
+            <button id="messengerMuteCancelBtn" class="messenger-delete-option messenger-delete-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- V3-B: Forward-to picker -->
+    <div id="messengerForwardModal" class="messenger-modal-overlay">
+        <div class="messenger-modal">
+            <div class="messenger-modal-header">
+                <span>Forward to</span>
+                <button id="messengerForwardCloseBtn" class="messenger-icon-btn">✕</button>
+            </div>
+            <div id="messengerForwardList" class="messenger-user-pick-list"></div>
+        </div>
+    </div>
+
+    <!-- V3: long-press action menu (reactions row + action list) -->
+    <div id="messengerActionMenu" class="messenger-action-menu" style="display:none;">
+        <div id="messengerActionReactions" class="messenger-action-reactions"></div>
+        <div id="messengerActionButtons" class="messenger-action-buttons"></div>
+    </div>
+
+    <!-- V3: delete confirmation modal -->
+    <div id="messengerDeleteModal" class="messenger-modal-overlay">
+        <div class="messenger-modal messenger-delete-modal">
+            <button id="messengerDeleteForMeBtn" class="messenger-delete-option">Delete for me</button>
+            <button id="messengerDeleteForEveryoneBtn" class="messenger-delete-option messenger-delete-danger" style="display:none;">Delete for everyone</button>
+            <button id="messengerDeleteCancelBtn" class="messenger-delete-option messenger-delete-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- V7: Starred Messages -->
+    <div id="messengerStarredModal" class="messenger-modal-overlay">
+        <div class="messenger-modal">
+            <div class="messenger-modal-header">
+                <span>⭐ Starred Messages</span>
+                <button id="messengerStarredCloseBtn" class="messenger-icon-btn">✕</button>
+            </div>
+            <div id="messengerStarredList" class="messenger-inbox-list"></div>
+            <div id="messengerStarredEmpty" class="messenger-empty-state" style="display:none;">
+                <p>No starred messages yet</p>
+                <span>Long-press any message and tap Star</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NEW CHAT PICKER ===== -->
+    <div id="messengerNewChatModal" class="messenger-modal-overlay">
+        <div class="messenger-modal">
+            <div class="messenger-modal-header">
+                <span>نئی چیٹ شروع کریں</span>
+                <button id="messengerNewChatCloseBtn" class="messenger-icon-btn">✕</button>
+            </div>
+            <input type="text" id="messengerUserSearch" class="messenger-search-input" placeholder="Search users...">
+            <div id="messengerUserPickList" class="messenger-user-pick-list"></div>
+        </div>
+    </div>
+    <!-- V4-B: fullscreen image viewer -->
+    <div id="messengerMediaViewer" class="messenger-media-viewer">
+        <button id="messengerMediaViewerCloseBtn" class="messenger-icon-btn messenger-media-viewer-close" title="Close">✕</button>
+        <img id="messengerMediaViewerImg" src="" alt="">
+    </div>
+
+</div>
